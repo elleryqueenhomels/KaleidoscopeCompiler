@@ -40,7 +40,7 @@ std::unique_ptr<ExprAST> ParseIdentifierExpr() {
     std::vector<std::unique_ptr<ExprAST>> args;
     while (g_current_token != ')') {
         args.push_back(ParseExpression());
-        if (g_current_token == ')') {
+        if (g_current_token != ')') {
             GetNextToken();  // eat ,
         }
     }
@@ -139,30 +139,4 @@ std::unique_ptr<FunctionAST> ParseTopLevelExpr() {
     auto expr = ParseExpression();
     auto proto = std::make_unique<PrototypeAST>("", std::vector<std::string>());
     return std::make_unique<FunctionAST>(std::move(proto), std::move(expr));
-}
-
-int main() {
-    GetNextToken();
-    while (true) {
-        switch (g_current_token) {
-            case TOKEN_EOF:
-                return 0;
-
-            case TOKEN_DEF:
-                ParseDefinition();
-                std::cout << "parsed a function definition" << std::endl;
-                break;
-
-            case TOKEN_EXTERN:
-                ParseExtern();
-                std::cout << "parsed a extern" << std::endl;
-                break;
-
-            default:
-                ParseTopLevelExpr();
-                std::cout << "parsed a top level expr" << std::endl;
-                break;
-        }
-    }
-    return 0;
 }
