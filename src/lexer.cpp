@@ -1,6 +1,13 @@
 #include <string>
 #include "lexer.h"
 
+
+// Filled in if TOKEN_IDENTIFIER
+std::string g_identifier_str;
+
+// Filled in if TOKEN_NUMBER
+double g_number_val;
+
 // extract a token from stdin
 int GetToken() {
     static int last_char = ' ';
@@ -63,26 +70,4 @@ int GetToken() {
     int this_char = last_char;
     last_char = getchar();
     return this_char;
-}
-
-int main() {
-    int token;
-
-    do {
-        token = GetToken();
-        if (token == TOKEN_NUMBER) {
-            printf("%f ", g_number_val);
-        } else if (token == TOKEN_DEF) {
-            printf("def ");
-        } else if (token == TOKEN_EXTERN) {
-            printf("extern ");
-        } else if (token == TOKEN_IDENTIFIER) {
-            printf("%s ", g_identifier_str.c_str());
-        }
-    }
-    while (token != TOKEN_EOF);
-
-    printf("\n");
-
-    return 0;
 }

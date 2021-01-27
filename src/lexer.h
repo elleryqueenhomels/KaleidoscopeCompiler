@@ -19,10 +19,10 @@ enum Token {
  * Global Variable Declare
  */
 // Filled in if TOKEN_IDENTIFIER
-std::string g_identifier_str;
+extern std::string g_identifier_str;
 
 // Filled in if TOKEN_NUMBER
-double g_number_val;
+extern double g_number_val;
 
 
 /**

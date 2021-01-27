@@ -31,5 +31,6 @@
 *.out
 *.app
 
-# Generated folders
+# Generated folders/files
 *.dSYM/
+*.test

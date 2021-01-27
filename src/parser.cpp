@@ -1,5 +1,10 @@
+#include <iostream>
 #include "lexer.h"
 #include "parser.h"
+
+
+// current token need to be processed
+int g_current_token;
 
 int GetNextToken() {
     return g_current_token = GetToken();
@@ -129,5 +134,35 @@ std::unique_ptr<PrototypeAST> ParseExtern() {
     return ParsePrototype();
 }
 
+// toplevelexpr ::= expression
+std::unique_ptr<FunctionAST> ParseTopLevelExpr() {
+    auto expr = ParseExpression();
+    auto proto = std::make_unique<PrototypeAST>("", std::vector<std::string>());
+    return std::make_unique<FunctionAST>(std::move(proto), std::move(expr));
+}
 
+int main() {
+    GetNextToken();
+    while (true) {
+        switch (g_current_token) {
+            case TOKEN_EOF:
+                return 0;
 
+            case TOKEN_DEF:
+                ParseDefinition();
+                std::cout << "parsed a function definition" << std::endl;
+                break;
+
+            case TOKEN_EXTERN:
+                ParseExtern();
+                std::cout << "parsed a extern" << std::endl;
+                break;
+
+            default:
+                ParseTopLevelExpr();
+                std::cout << "parsed a top level expr" << std::endl;
+                break;
+        }
+    }
+    return 0;
+}

@@ -84,7 +84,7 @@ class FunctionAST {
  * Global Variable Declare
  */
 // current token need to be processed
-int g_current_token;
+extern int g_current_token;
 
 // define precedence for operator
 const std::unordered_map<char, int> g_binop_precedence = { 
