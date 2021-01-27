@@ -1,5 +1,5 @@
-#include <string>
 #include "lexer.h"
+#include <string>
 
 
 // Filled in if TOKEN_IDENTIFIER

@@ -1,6 +1,7 @@
-#include <iostream>
 #include "../src/lexer.h"
 #include "../src/parser.h"
+#include <iostream>
+
 
 int main() {
     GetNextToken();

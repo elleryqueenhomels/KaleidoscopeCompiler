@@ -1,5 +1,6 @@
 #include "../src/lexer.h"
 
+
 int main() {
     int token;
 
