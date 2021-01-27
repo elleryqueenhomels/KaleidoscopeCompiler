@@ -5,6 +5,19 @@
 #include <unordered_map>
 #include <vector>
 
+
+/**
+ * Global Variable Declare
+ */
+// current token need to be processed
+extern int g_current_token;
+
+// define precedence for operator
+const std::unordered_map<char, int> g_binop_precedence = {
+    {'<', 10}, {'+', 20}, {'-', 20}, {'*', 40}
+};
+
+
 /**
  * CLASS DECLARE
  */
@@ -78,18 +91,6 @@ class FunctionAST {
     std::unique_ptr<PrototypeAST> proto_;
     std::unique_ptr<ExprAST> body_;
 };
-
-
-/**
- * Global Variable Declare
- */
-// current token need to be processed
-extern int g_current_token;
-
-// define precedence for operator
-const std::unordered_map<char, int> g_binop_precedence = { 
-    {'<', 10}, {'+', 20}, {'-', 20}, {'*', 40}
-}; 
 
 
 /**

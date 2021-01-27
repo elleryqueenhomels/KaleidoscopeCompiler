@@ -3,6 +3,17 @@
 
 #include <string>
 
+
+/**
+ * Global Variable Declare
+ */
+// Filled in if TOKEN_IDENTIFIER
+extern std::string g_identifier_str;
+
+// Filled in if TOKEN_NUMBER
+extern double g_number_val;
+
+
 /**
  * Enum Declare
  */
@@ -13,16 +24,6 @@ enum Token {
     TOKEN_IDENTIFIER = -4,
     TOKEN_NUMBER = -5
 };
-
-
-/**
- * Global Variable Declare
- */
-// Filled in if TOKEN_IDENTIFIER
-extern std::string g_identifier_str;
-
-// Filled in if TOKEN_NUMBER
-extern double g_number_val;
 
 
 /**
