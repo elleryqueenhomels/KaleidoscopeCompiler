@@ -23,17 +23,16 @@
 /**
  * Global Variable Declare
  */
-// 记录了LLVM的核心数据结构，比如类型和常量表，不过我们不太需要关心它的内部
-// 
+// Record the core data structures of LLVM, e.g. types and constants table
 extern llvm::LLVMContext g_llvm_context;
 
-// 用于创建LLVM指令
+// Used for creating LLVM IR (Intermediate Representation)
 extern llvm::IRBuilder<> g_ir_builder(g_llvm_context);
 
-// 用于管理函数和全局变量，可以粗浅地理解为类c++的编译单元(单个cpp文件)
+// Used for managing functions and global variables. You can consider it as a compile unit (like single .cpp file)
 extern llvm::Module g_module("my cool jit", g_llvm_context);
 
-// 用于记录函数的变量参数
+// Used for recording the parameters of function
 extern std::map<std::string, llvm::Value*> g_named_values;
 
 #endif // _H_CODE_GEN
