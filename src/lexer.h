@@ -1,6 +1,7 @@
 #ifndef _H_LEXER
 #define _H_LEXER
 
+
 #include <string>
 
 
@@ -31,5 +32,6 @@ enum Token {
  */
 // extract a token from stdin
 int GetToken();
+
 
 #endif // _H_LEXER

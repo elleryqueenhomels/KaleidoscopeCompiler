@@ -1,6 +1,8 @@
 #ifndef _H_PARSER
 #define _H_PARSER
 
+
+#include "codegen.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -25,12 +27,16 @@ const std::unordered_map<char, int> g_binop_precedence = {
 class ExprAST {
   public:
     virtual ~ExprAST() {}
+
+    virtual llvm::Value* CodeGen() = 0;
 };
 
 // number literal expression
 class NumberExprAST : public ExprAST {
   public:
     NumberExprAST(double val) : val_(val) {}
+
+    llvm::Value* CodeGen() override;
 
   private:
     double val_;
@@ -41,6 +47,8 @@ class VariableExprAST : public ExprAST {
   public:
     VariableExprAST(const std::string& name) : name_(name) {}
 
+    llvm::Value* CodeGen() override;
+
   private:
     std::string name_;
 };
@@ -50,6 +58,8 @@ class BinaryExprAST : public ExprAST {
   public:
     BinaryExprAST(char op, std::unique_ptr<ExprAST> lhs, std::unique_ptr<ExprAST> rhs)
         : op_(op), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
+
+    llvm::Value* CodeGen() override;
 
   private:
     char op_;
@@ -62,6 +72,8 @@ class CallExprAST : public ExprAST {
   public:
     CallExprAST(const std::string& callee, std::vector<std::unique_ptr<ExprAST>> args)
         : callee_(callee), args_(std::move(args)) {}
+
+    llvm::Value* CodeGen() override;
 
   private:
     std::string callee_;
@@ -76,6 +88,8 @@ class PrototypeAST {
     
     const std::string& name() const { return name_; }
 
+    llvm::Value* CodeGen();
+
   private:
     std::string name_;
     std::vector<std::string> args_;
@@ -86,6 +100,8 @@ class FunctionAST {
   public:
     FunctionAST(std::unique_ptr<PrototypeAST> proto, std::unique_ptr<ExprAST> body)
         : proto_(std::move(proto)), body_(std::move(body)) {}
+    
+    llvm::Value* CodeGen();
 
   private:
     std::unique_ptr<PrototypeAST> proto_;
@@ -140,5 +156,6 @@ std::unique_ptr<PrototypeAST> ParseExtern();
 
 // toplevelexpr ::= expression 
 std::unique_ptr<FunctionAST> ParseTopLevelExpr();
+
 
 #endif // _H_PARSER

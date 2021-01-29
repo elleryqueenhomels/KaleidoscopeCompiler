@@ -1,6 +1,7 @@
 #ifndef _H_CODE_GEN
 #define _H_CODE_GEN
 
+
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/IR/BasicBlock.h"
@@ -23,7 +24,7 @@
 /**
  * Global Variable Declare
  */
-// Record the core data structures of LLVM, e.g. types and constants table
+// Record the core "global" data of LLVM's core infrastructure, e.g. types and constants uniquing table
 extern llvm::LLVMContext g_llvm_context;
 
 // Used for creating LLVM IR (Intermediate Representation)
@@ -33,6 +34,7 @@ extern llvm::IRBuilder<> g_ir_builder(g_llvm_context);
 extern llvm::Module g_module("my cool jit", g_llvm_context);
 
 // Used for recording the parameters of function
-extern std::map<std::string, llvm::Value*> g_named_values;
+extern std::unordered_map<std::string, llvm::Value*> g_named_values;
+
 
 #endif // _H_CODE_GEN
