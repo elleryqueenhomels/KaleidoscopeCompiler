@@ -35,6 +35,7 @@ llvm::Value* BinaryExprAST::CodeGen() {
         case '+': return g_ir_builder.CreateFAdd(lhs, rhs, "addtmp");
         case '-': return g_ir_builder.CreateFSub(lhs, rhs, "subtmp");
         case '*': return g_ir_builder.CreateFMul(lhs, rhs, "multmp");
+        case '/': return g_ir_builder.CreateFDiv(lhs, rhs, "divtmp");
         default: return nullptr;
     }
 }

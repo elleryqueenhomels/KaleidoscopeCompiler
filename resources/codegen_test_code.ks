@@ -11,3 +11,5 @@ def bar(a)
 extern cos(x)
 
 cos(1.234)
+
+5 - 21 * 2 / 6
