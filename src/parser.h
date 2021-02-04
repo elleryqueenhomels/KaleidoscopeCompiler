@@ -16,7 +16,8 @@ extern int g_current_token;
 
 // define precedence for operator
 const std::unordered_map<char, int> g_binop_precedence = {
-    {'<', 10}, {'+', 20}, {'-', 20}, {'*', 40}
+    { '<', 10 }, { '+', 20 }, { '-', 20 },
+    { '*', 40 }, { '/', 40 }, { '%', 40 }
 };
 
 
