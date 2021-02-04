@@ -1,7 +1,7 @@
 #include "codegen.h"
 #include "parser.h"
 #include "lexer.h"
-#include <iostream>
+
 
 // Record the core "global" data of LLVM's core infrastructure, e.g. types and constants uniquing table
 llvm::LLVMContext g_llvm_context;
