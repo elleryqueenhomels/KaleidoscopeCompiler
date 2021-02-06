@@ -39,7 +39,12 @@ llvm::Value* BinaryExprAST::CodeGen() {
     llvm::Value* rhs = rhs_->CodeGen();
     switch (op_) {
         case '<': {
-            llvm::Value* tmp = g_ir_builder.CreateFCmpULT(lhs, rhs, "cmptmp");
+            llvm::Value* tmp = g_ir_builder.CreateFCmpULT(lhs, rhs, "ltcmptmp");
+            // convert 0/1 to 0.0/1.0
+            return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
+        }
+        case '>': {
+            llvm::Value* tmp = g_ir_builder.CreateFCmpUGT(lhs, rhs, "gtcmptmp");
             // convert 0/1 to 0.0/1.0
             return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
         }
