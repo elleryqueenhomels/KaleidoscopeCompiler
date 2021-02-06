@@ -19,6 +19,9 @@ const std::unordered_map<char, int> g_binop_precedence = {
     { '<', 10 }, { '+', 20 }, { '-', 20 }, { '*', 40 }, { '/', 40 }
 };
 
+// symbol for top level expression
+const std::string top_level_expr_name = "__anon_expr";
+
 
 /**
  * CLASS DECLARE

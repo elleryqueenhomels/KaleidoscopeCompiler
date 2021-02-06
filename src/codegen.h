@@ -19,6 +19,7 @@
 #include "llvm/Transforms/InstCombine/InstCombine.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Scalar/GVN.h"
+#include "KaleidoscopeJIT.h"
 #include <unordered_map>
 
 
@@ -32,13 +33,31 @@ extern llvm::LLVMContext g_llvm_context;
 extern llvm::IRBuilder<> g_ir_builder;
 
 // Used for managing functions and global variables. You can consider it as a compile unit (like single .cpp file)
-extern llvm::Module g_module;
+extern std::unique_ptr<llvm::Module> g_module;
 
 // Used for recording the parameters of function
 extern std::unordered_map<std::string, llvm::Value*> g_named_values;
 
 // Function Passes Manager for CodeGen Optimizer
-extern llvm::legacy::FunctionPassManager g_fpm;
+extern std::unique_ptr<llvm::legacy::FunctionPassManager> g_fpm;
+
+// Add JIT Compiler
+extern std::unique_ptr<llvm::orc::KaleidoscopeJIT> g_jit;
+
+
+/**
+ * Function Declare
+*/
+// query function interface via function name
+llvm::Function* GetFunction(const std::string& name);
+
+void ReCreateModule();
+
+void ParseDefinitionToken();
+
+void ParseExternToken();
+
+void ParseTopLevel();
 
 
 #endif // _H_CODE_GEN

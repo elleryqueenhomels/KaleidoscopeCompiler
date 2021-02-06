@@ -136,6 +136,6 @@ std::unique_ptr<PrototypeAST> ParseExtern() {
 // toplevelexpr ::= expression
 std::unique_ptr<FunctionAST> ParseTopLevelExpr() {
     auto expr = ParseExpression();
-    auto proto = std::make_unique<PrototypeAST>("", std::vector<std::string>());
+    auto proto = std::make_unique<PrototypeAST>(top_level_expr_name, std::vector<std::string>());
     return std::make_unique<FunctionAST>(std::move(proto), std::move(expr));
 }

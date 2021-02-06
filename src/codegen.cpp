@@ -1,6 +1,7 @@
 #include "codegen.h"
 #include "parser.h"
 #include "lexer.h"
+#include <iostream>
 
 
 // Record the core "global" data of LLVM's core infrastructure, e.g. types and constants uniquing table
@@ -10,13 +11,19 @@ llvm::LLVMContext g_llvm_context;
 llvm::IRBuilder<> g_ir_builder(g_llvm_context);
 
 // Used for managing functions and global variables. You can consider it as a compile unit (like single .cpp file)
-llvm::Module g_module("my cool jit", g_llvm_context);
+std::unique_ptr<llvm::Module> g_module = std::make_unique<llvm::Module>("my cool jit", g_llvm_context);
 
 // Used for recording the parameters of function
 std::unordered_map<std::string, llvm::Value*> g_named_values;
 
 // Function Passes Manager for CodeGen Optimizer
-llvm::legacy::FunctionPassManager g_fpm(&g_module);
+std::unique_ptr<llvm::legacy::FunctionPassManager> g_fpm = std::make_unique<llvm::legacy::FunctionPassManager>(g_module.get());
+
+// Add JIT Compiler
+std::unique_ptr<llvm::orc::KaleidoscopeJIT> g_jit;
+
+// Add dictionary for function name to function interface
+std::unordered_map<std::string, std::unique_ptr<PrototypeAST>> name2proto_ast;
 
 
 llvm::Value* NumberExprAST::CodeGen() {
@@ -46,7 +53,7 @@ llvm::Value* BinaryExprAST::CodeGen() {
 
 llvm::Value* CallExprAST::CodeGen() {
     // g_module stores global variables and functions
-    llvm::Function* callee = g_module.getFunction(callee_);
+    llvm::Function* callee = GetFunction(callee_);
 
     std::vector<llvm::Value*> args;
     for (std::unique_ptr<ExprAST>& arg_expr : args_) {
@@ -65,7 +72,7 @@ llvm::Value* PrototypeAST::CodeGen() {
 
     // create function, ExternalLinkage means function may not be defined in current module
     // we register it using name_ in current module `g_module`, so that can query it using this name later
-    llvm::Function* func = llvm::Function::Create(function_type, llvm::Function::ExternalLinkage, name_, &g_module);
+    llvm::Function* func = llvm::Function::Create(function_type, llvm::Function::ExternalLinkage, name_, *g_module);
 
     // increase IR readability，set argument name for function
     int index = 0;
@@ -77,11 +84,10 @@ llvm::Value* PrototypeAST::CodeGen() {
 }
 
 llvm::Value* FunctionAST::CodeGen() {
-    // check if function declare has been finished codegen (e.g. previous `extern` declare), otherwise execute codegen
-    llvm::Function* func = g_module.getFunction(proto_->name());
-    if (func == nullptr) {
-        func = (llvm::Function*) proto_->CodeGen();
-    }
+    PrototypeAST& proto = *proto_;
+    name2proto_ast[proto.name()] = std::move(proto_); // transfer ownership
+
+    llvm::Function* func = GetFunction(proto.name());
 
     // create a Block and set insert point
     // llvm block can be used for defining control flow graph.
@@ -101,7 +107,82 @@ llvm::Value* FunctionAST::CodeGen() {
     llvm::verifyFunction(*func);
 
     // add optimization for function codegen
-    g_fpm.run(*func);
+    g_fpm->run(*func);
 
     return func;
+}
+
+llvm::Function* GetFunction(const std::string& name) {
+    llvm::Function* callee = g_module->getFunction(name);
+
+    // current module exists function definition
+    if (callee != nullptr) {
+        return callee;
+    }
+    
+    // declare function
+    return (llvm::Function*) name2proto_ast.at(name)->CodeGen();
+}
+
+void ReCreateModule() {
+    // Open a new module.
+    g_module = std::make_unique<llvm::Module>("my cool jit", g_llvm_context);
+    g_module->setDataLayout(g_jit->getTargetMachine().createDataLayout());
+
+    // Create a new pass manager attached to it.
+    g_fpm = std::make_unique<llvm::legacy::FunctionPassManager>(g_module.get());
+
+    // Do simple "peephole" optimizations and bit-twiddling optzns.
+    g_fpm->add(llvm::createInstructionCombiningPass());
+    // Reassociate expressions.
+    g_fpm->add(llvm::createReassociatePass());
+    // Eliminate Common SubExpressions.
+    g_fpm->add(llvm::createGVNPass());
+    // Simplify the control flow graph (deleting unreachable blocks, etc).
+    g_fpm->add(llvm::createCFGSimplificationPass());
+
+    g_fpm->doInitialization();
+}
+
+void ParseDefinitionToken() {
+    auto ast = ParseDefinition();
+    std::cout << "parsed a function definition" << std::endl;
+    ast->CodeGen()->print(llvm::errs());
+    std::cerr << std::endl;
+
+    g_jit->addModule(std::move(g_module));
+    ReCreateModule();
+}
+
+void ParseExternToken() {
+    auto ast = ParseExtern();
+    std::cout << "parsed an extern" << std::endl;
+    ast->CodeGen()->print(llvm::errs());
+    std::cerr << std::endl;
+
+    name2proto_ast[ast->name()] = std::move(ast);
+}
+
+void ParseTopLevel() {
+    auto ast = ParseTopLevelExpr();
+    std::cout << "parsed a top level expr" << std::endl;
+    ast->CodeGen()->print(llvm::errs());
+    std::cout << std::endl;
+
+    auto h = g_jit->addModule(std::move(g_module));
+
+    // re-create g_module for next time using
+    ReCreateModule();
+
+    // find compiled function symbol through name
+    auto symbol = g_jit->findSymbol(top_level_expr_name);
+
+    // force cast to C function pointer
+    double (*fp)() = (double (*)()) (symbol.getAddress().get());
+
+    // execute and output
+    std::cout << "Evaluated to:" << std::endl;
+    std::cout << fp() << std::endl << std::endl;
+
+    g_jit->removeModule(h);
 }
