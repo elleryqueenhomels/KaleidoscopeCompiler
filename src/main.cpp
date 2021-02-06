@@ -5,6 +5,13 @@
 
 
 int main() {
+    // add passes for codegen optimization
+    g_fpm.add(llvm::createInstructionCombiningPass());
+    g_fpm.add(llvm::createReassociatePass());
+    g_fpm.add(llvm::createGVNPass());
+    g_fpm.add(llvm::createCFGSimplificationPass());
+    g_fpm.doInitialization();
+
     GetNextToken();
     while (true) {
         switch (g_current_token) {

@@ -37,5 +37,8 @@ extern llvm::Module g_module;
 // Used for recording the parameters of function
 extern std::unordered_map<std::string, llvm::Value*> g_named_values;
 
+// Function Passes Manager for CodeGen Optimizer
+extern llvm::legacy::FunctionPassManager g_fpm;
+
 
 #endif // _H_CODE_GEN

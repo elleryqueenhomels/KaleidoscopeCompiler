@@ -13,3 +13,6 @@ extern cos(x)
 cos(1.234)
 
 5 - 21 * 2 / 6
+
+def test(x)
+    (1 + 2 + x) * (x + (1 + 2))

@@ -15,6 +15,10 @@ llvm::Module g_module("my cool jit", g_llvm_context);
 // Used for recording the parameters of function
 std::unordered_map<std::string, llvm::Value*> g_named_values;
 
+// Function Passes Manager for CodeGen Optimizer
+llvm::legacy::FunctionPassManager g_fpm(&g_module);
+
+
 llvm::Value* NumberExprAST::CodeGen() {
     return llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(val_));
 }
@@ -95,5 +99,9 @@ llvm::Value* FunctionAST::CodeGen() {
     llvm::Value* ret_val = body_->CodeGen();
     g_ir_builder.CreateRet(ret_val);
     llvm::verifyFunction(*func);
+
+    // add optimization for function codegen
+    g_fpm.run(*func);
+
     return func;
 }
