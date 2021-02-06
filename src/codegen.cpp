@@ -11,13 +11,13 @@ llvm::LLVMContext g_llvm_context;
 llvm::IRBuilder<> g_ir_builder(g_llvm_context);
 
 // Used for managing functions and global variables. You can consider it as a compile unit (like single .cpp file)
-std::unique_ptr<llvm::Module> g_module = std::make_unique<llvm::Module>("my cool jit", g_llvm_context);
+std::unique_ptr<llvm::Module> g_module;
 
 // Used for recording the parameters of function
 std::unordered_map<std::string, llvm::Value*> g_named_values;
 
 // Function Passes Manager for CodeGen Optimizer
-std::unique_ptr<llvm::legacy::FunctionPassManager> g_fpm = std::make_unique<llvm::legacy::FunctionPassManager>(g_module.get());
+std::unique_ptr<llvm::legacy::FunctionPassManager> g_fpm;
 
 // Add JIT Compiler
 std::unique_ptr<llvm::orc::KaleidoscopeJIT> g_jit;
@@ -125,7 +125,7 @@ llvm::Function* GetFunction(const std::string& name) {
         return callee;
     }
     
-    // declare function
+    // declare function (use PrototypeAST to CodeGen)
     return (llvm::Function*) name2proto_ast.at(name)->CodeGen();
 }
 
@@ -134,7 +134,7 @@ void ReCreateModule() {
     g_module = std::make_unique<llvm::Module>("my cool jit", g_llvm_context);
     g_module->setDataLayout(g_jit->getTargetMachine().createDataLayout());
 
-    // Create a new pass manager attached to it.
+    // Create a new pass manager attached to g_module.
     g_fpm = std::make_unique<llvm::legacy::FunctionPassManager>(g_module.get());
 
     // Do simple "peephole" optimizations and bit-twiddling optzns.
@@ -174,7 +174,7 @@ void ParseTopLevel() {
     ast->CodeGen()->print(llvm::errs());
     std::cout << std::endl;
 
-    auto h = g_jit->addModule(std::move(g_module));
+    auto moduleKey = g_jit->addModule(std::move(g_module));
 
     // re-create g_module for next time using
     ReCreateModule();
@@ -189,5 +189,5 @@ void ParseTopLevel() {
     std::cout << "Evaluated to:" << std::endl;
     std::cout << fp() << std::endl << std::endl;
 
-    g_jit->removeModule(h);
+    g_jit->removeModule(moduleKey);
 }
