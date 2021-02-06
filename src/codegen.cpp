@@ -183,6 +183,75 @@ llvm::Value* IfExprAST::CodeGen() {
     return pn;
 }
 
+llvm::Value* ForExprAST::CodeGen() {
+    // codegen start
+    llvm::Value* start_val = start_expr_->CodeGen();
+
+    // get current function
+    llvm::Function* func = g_ir_builder.GetInsertBlock()->getParent();
+
+    // save current block
+    llvm::BasicBlock* pre_block = g_ir_builder.GetInsertBlock();
+
+    // add a loop block into current function
+    llvm::BasicBlock* loop_block = llvm::BasicBlock::Create(g_llvm_context, "forloop", func);
+
+    // add instruction to jump to loop_block
+    g_ir_builder.CreateBr(loop_block);
+
+    // now begin to add instructions in loop_block
+    g_ir_builder.SetInsertPoint(loop_block);
+
+    llvm::PHINode* var = g_ir_builder.CreatePHI(
+        llvm::Type::getDoubleTy(g_llvm_context), 2, var_name_.c_str());
+
+    // if comes from pre_block, then use start_val
+    var->addIncoming(start_val, pre_block);
+
+    // now we have a new variable, since it may be referenced in the later code piece
+    // so we need to register it into g_named_values
+    // NOTE: var_name may be duplicated with function argument names
+    // currently we ignore this special case for convenience
+    g_named_values[var_name_] = var;
+
+    // add body instructions inside loop_block
+    body_expr_->CodeGen();
+
+    // codegen step_expr
+    llvm::Value* step_value = step_expr_->CodeGen();
+
+    // next_var = var + step_value
+    llvm::Value* next_value = g_ir_builder.CreateFAdd(var, step_value, "nextvar");
+
+    // codegen end_expr
+    llvm::Value* end_value = end_expr_->CodeGen();
+
+    // end_value = (end_value != 0.0)
+    end_value = g_ir_builder.CreateFCmpONE(
+        end_value, llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(0.0)), "loopcond");
+
+    // similar to if-then-else, the block may be changed later, save the current block
+    llvm::BasicBlock* loop_end_block = g_ir_builder.GetInsertBlock();
+
+    // create block for loop ends
+    llvm::BasicBlock* after_block = llvm::BasicBlock::Create(g_llvm_context, "afterloop", func);
+
+    // use end_value to choose enter loop_block again or finish loop
+    g_ir_builder.CreateCondBr(end_value, loop_block, after_block);
+
+    // add instructions in after_block
+    g_ir_builder.SetInsertPoint(after_block);
+
+    // if loops again, use the next_value
+    var->addIncoming(next_value, loop_end_block);
+
+    // erase var_name when loop ends
+    g_named_values.erase(var_name_);
+
+    // return 0
+    return llvm::Constant::getNullValue(llvm::Type::getDoubleTy(g_llvm_context));
+}
+
 llvm::Function* GetFunction(const std::string& name) {
     llvm::Function* callee = g_module->getFunction(name);
 
@@ -256,4 +325,10 @@ void ParseTopLevel() {
     std::cout << fp() << std::endl << std::endl;
 
     g_jit->removeModule(moduleKey);
+}
+
+// implement a printd function
+extern "C" double printd(double x) {
+    printf("%lf\n", x);
+    return 0.0;
 }

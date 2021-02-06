@@ -58,6 +58,7 @@ std::unique_ptr<ExprAST> ParsePrimary() {
         case TOKEN_NUMBER: return ParseNumberExpr();
         case '(': return ParseParenExpr();
         case TOKEN_IF: return ParseIfExpr();
+        case TOKEN_FOR: return ParseForExpr();
         default: return nullptr;
     }
 }
@@ -105,7 +106,7 @@ std::unique_ptr<ExprAST> ParseExpression() {
     return ParseBinOpRhs(0, std::move(lhs));
 }
 
-// expression
+// ifexpr
 //   ::= if expr then expr else expr
 std::unique_ptr<ExprAST> ParseIfExpr() {
     GetNextToken(); // eat if
@@ -115,6 +116,24 @@ std::unique_ptr<ExprAST> ParseIfExpr() {
     GetNextToken(); // eat else
     std::unique_ptr<ExprAST> else_expr = ParseExpression();
     return std::make_unique<IfExprAST>(std::move(cond), std::move(then_expr), std::move(else_expr));
+}
+
+// forexpr
+//   ::= for var_name = start_expr, end_expr, step_expr in body_expr
+std::unique_ptr<ExprAST> ParseForExpr() {
+    GetNextToken(); // eat for
+    std::string var_name = g_identifier_str;
+    GetNextToken(); // eat var_name
+    GetNextToken(); // eat =
+    std::unique_ptr<ExprAST> start_expr = ParseExpression();
+    GetNextToken(); // eat ,
+    std::unique_ptr<ExprAST> end_expr = ParseExpression();
+    GetNextToken(); // eat ,
+    std::unique_ptr<ExprAST> step_expr = ParseExpression();
+    GetNextToken(); // eat in
+    std::unique_ptr<ExprAST> body_expr = ParseExpression();
+    return std::make_unique<ForExprAST>(
+        var_name, std::move(start_expr), std::move(end_expr), std::move(step_expr), std::move(body_expr));
 }
 
 // prototype

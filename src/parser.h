@@ -97,6 +97,31 @@ class IfExprAST : public ExprAST {
     std::unique_ptr<ExprAST> else_expr_;
 };
 
+// for in expression
+class ForExprAST : public ExprAST {
+  public:
+    ForExprAST(
+      const std::string& var_name,
+      std::unique_ptr<ExprAST> start_expr,
+      std::unique_ptr<ExprAST> end_expr,
+      std::unique_ptr<ExprAST> step_expr,
+      std::unique_ptr<ExprAST> body_expr)
+        : var_name_(var_name),
+          start_expr_(std::move(start_expr)),
+          end_expr_(std::move(end_expr)),
+          step_expr_(std::move(step_expr)),
+          body_expr_(std::move(body_expr)) {}
+
+    llvm::Value* CodeGen() override;
+
+  private:
+    std::string var_name_;
+    std::unique_ptr<ExprAST> start_expr_;
+    std::unique_ptr<ExprAST> end_expr_;
+    std::unique_ptr<ExprAST> step_expr_;
+    std::unique_ptr<ExprAST> body_expr_;
+};
+
 // function interface
 class PrototypeAST {
   public:
@@ -161,9 +186,13 @@ std::unique_ptr<ExprAST> ParseBinOpRhs(int min_precedence, std::unique_ptr<ExprA
 //   ::= primary [binop primary] [binop primary] ... 
 std::unique_ptr<ExprAST> ParseExpression();
 
-// expression
+// ifexpr
 //   ::= if expr then expr else expr
 std::unique_ptr<ExprAST> ParseIfExpr();
+
+// forexpr
+//   ::= for var_name = start_expr, end_expr, step_expr in body_expr
+std::unique_ptr<ExprAST> ParseForExpr();
 
 // prototype 
 //   ::= id ( id id ... id) 
