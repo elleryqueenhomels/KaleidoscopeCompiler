@@ -83,6 +83,20 @@ class CallExprAST : public ExprAST {
     std::vector<std::unique_ptr<ExprAST>> args_;
 };
 
+// if then else expression
+class IfExprAST : public ExprAST {
+  public:
+    IfExprAST(std::unique_ptr<ExprAST> cond, std::unique_ptr<ExprAST> then_expr, std::unique_ptr<ExprAST> else_expr)
+        : cond_(std::move(cond)), then_expr_(std::move(then_expr)), else_expr_(std::move(else_expr)) {}
+
+    llvm::Value* CodeGen() override;
+
+  private:
+    std::unique_ptr<ExprAST> cond_;
+    std::unique_ptr<ExprAST> then_expr_;
+    std::unique_ptr<ExprAST> else_expr_;
+};
+
 // function interface
 class PrototypeAST {
   public:
@@ -146,6 +160,10 @@ std::unique_ptr<ExprAST> ParseBinOpRhs(int min_precedence, std::unique_ptr<ExprA
 // expression 
 //   ::= primary [binop primary] [binop primary] ... 
 std::unique_ptr<ExprAST> ParseExpression();
+
+// expression
+//   ::= if expr then expr else expr
+std::unique_ptr<ExprAST> ParseIfExpr();
 
 // prototype 
 //   ::= id ( id id ... id) 

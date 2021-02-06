@@ -53,12 +53,13 @@ std::unique_ptr<ExprAST> ParseIdentifierExpr() {
 ///   ::= numberexpr
 ///   ::= parenexpr
 std::unique_ptr<ExprAST> ParsePrimary() {
-  switch (g_current_token) {
-    case TOKEN_IDENTIFIER: return ParseIdentifierExpr();
-    case TOKEN_NUMBER: return ParseNumberExpr();
-    case '(': return ParseParenExpr();
-    default: return nullptr;
-  }
+    switch (g_current_token) {
+        case TOKEN_IDENTIFIER: return ParseIdentifierExpr();
+        case TOKEN_NUMBER: return ParseNumberExpr();
+        case '(': return ParseParenExpr();
+        case TOKEN_IF: return ParseIfExpr();
+        default: return nullptr;
+    }
 }
 
 // get current token precedence
@@ -102,6 +103,18 @@ std::unique_ptr<ExprAST> ParseBinOpRhs(int min_precedence, std::unique_ptr<ExprA
 std::unique_ptr<ExprAST> ParseExpression() {
     auto lhs = ParsePrimary();
     return ParseBinOpRhs(0, std::move(lhs));
+}
+
+// expression
+//   ::= if expr then expr else expr
+std::unique_ptr<ExprAST> ParseIfExpr() {
+    GetNextToken(); // eat if
+    std::unique_ptr<ExprAST> cond = ParseExpression();
+    GetNextToken(); // eat then
+    std::unique_ptr<ExprAST> then_expr = ParseExpression();
+    GetNextToken(); // eat else
+    std::unique_ptr<ExprAST> else_expr = ParseExpression();
+    return std::make_unique<IfExprAST>(std::move(cond), std::move(then_expr), std::move(else_expr));
 }
 
 // prototype

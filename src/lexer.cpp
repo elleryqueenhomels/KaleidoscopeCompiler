@@ -31,6 +31,15 @@ int GetToken() {
         if (g_identifier_str == "extern") {
             return TOKEN_EXTERN;
         }
+        if (g_identifier_str == "if") {
+            return TOKEN_IF;
+        }
+        if (g_identifier_str == "then") {
+            return TOKEN_THEN;
+        }
+        if (g_identifier_str == "else") {
+            return TOKEN_ELSE;
+        }
         return TOKEN_IDENTIFIER;
     }
 

@@ -117,6 +117,72 @@ llvm::Value* FunctionAST::CodeGen() {
     return func;
 }
 
+llvm::Value* IfExprAST::CodeGen() {
+    llvm::Value* cond_value = cond_->CodeGen();
+
+    // convert condition to a bool by comparing non-equal to 0.0
+    cond_value = g_ir_builder.CreateFCmpONE(
+        cond_value, llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(0.0)), "ifcond");
+
+    // since we will create a block for each function, so here we must be already inside a block
+    // we can access the parent function via the current block
+    llvm::Function* func = g_ir_builder.GetInsertBlock()->getParent();
+
+    // create blocks for the then and else cases
+    // insert the 'then' block at the end of the function
+    llvm::BasicBlock* then_block =
+        llvm::BasicBlock::Create(g_llvm_context, "then", func);
+    llvm::BasicBlock* else_block =
+        llvm::BasicBlock::Create(g_llvm_context, "else");
+    llvm::BasicBlock* final_block =
+        llvm::BasicBlock::Create(g_llvm_context, "ifcont");
+
+    // create jump instruction, use cond_value to choose then_block/else_block
+    g_ir_builder.CreateCondBr(cond_value, then_block, else_block);
+
+    // emit then value
+    g_ir_builder.SetInsertPoint(then_block);
+
+    // codegen then_block, add instruction to jump to final_block
+    llvm::Value* then_value = then_expr_->CodeGen();
+    g_ir_builder.CreateBr(final_block);
+
+    // inside then statement, there may be nested if-then-else,
+    // with nested codegen, it will change the current block,
+    // we use the block which has the final result as the current then_block
+    then_block = g_ir_builder.GetInsertBlock();
+
+    // we only add else_block here in order to guarantee
+    // the else_block is put behind the most outer then_block above
+    func->getBasicBlockList().push_back(else_block);
+
+    // emit else value
+    g_ir_builder.SetInsertPoint(else_block);
+
+    // codegen else_block, similar to then_block
+    llvm::Value* else_value = else_expr_->CodeGen();
+    g_ir_builder.CreateBr(final_block);
+
+    // same reason as then_block (nested if-then-else)
+    else_block = g_ir_builder.GetInsertBlock();
+
+    // same reason as else_block
+    func->getBasicBlockList().push_back(final_block);
+
+    // emit final block
+    g_ir_builder.SetInsertPoint(final_block);
+
+    // NumReservedValues is a hint for the number of incoming edges
+    // that this phi node will have (use 0 if you really have no idea)
+    llvm::PHINode* pn = g_ir_builder.CreatePHI(
+        llvm::Type::getDoubleTy(g_llvm_context), 2, "iftmp");
+
+    pn->addIncoming(then_value, then_block);
+    pn->addIncoming(else_value, else_block);
+
+    return pn;
+}
+
 llvm::Function* GetFunction(const std::string& name) {
     llvm::Function* callee = g_module->getFunction(name);
 
