@@ -52,7 +52,12 @@ llvm::Value* BinaryExprAST::CodeGen() {
         case '-': return g_ir_builder.CreateFSub(lhs, rhs, "subtmp");
         case '*': return g_ir_builder.CreateFMul(lhs, rhs, "multmp");
         case '/': return g_ir_builder.CreateFDiv(lhs, rhs, "divtmp");
-        default: return nullptr;
+        default: {
+            // user defined operator
+            llvm::Function* func = GetFunction(std::string("binary") + op_);
+            llvm::Value* operands[2] = { lhs, rhs };
+            return g_ir_builder.CreateCall(func, operands, "binop");
+        }
     }
 }
 
@@ -93,6 +98,11 @@ llvm::Value* FunctionAST::CodeGen() {
     name2proto_ast[proto.name()] = std::move(proto_); // transfer ownership
 
     llvm::Function* func = GetFunction(proto.name());
+
+    // register operator precedence if this is an operator define func
+    if (proto.IsBinaryOp()) {
+        g_binop_precedence[proto.GetOpName()] = proto.op_precedence();
+    }
 
     // create a Block and set insert point
     // llvm block can be used for defining control flow graph.

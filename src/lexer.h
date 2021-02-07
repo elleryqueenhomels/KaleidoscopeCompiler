@@ -28,7 +28,8 @@ enum Token {
     TOKEN_THEN = -7,
     TOKEN_ELSE = -8,
     TOKEN_FOR = -9,
-    TOKEN_IN = -10
+    TOKEN_IN = -10,
+    TOKEN_BINARY = -11
 };
 
 

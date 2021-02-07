@@ -15,9 +15,7 @@
 extern int g_current_token;
 
 // define precedence for operator
-const std::unordered_map<char, int> g_binop_precedence = {
-    { '<', 10 }, { '>', 10 }, { '+', 20 }, { '-', 20 }, { '*', 40 }, { '/', 40 }
-};
+extern std::unordered_map<char, int> g_binop_precedence;
 
 // symbol for top level expression
 const std::string top_level_expr_name = "__anon_expr";
@@ -125,16 +123,26 @@ class ForExprAST : public ExprAST {
 // function interface
 class PrototypeAST {
   public:
-    PrototypeAST(const std::string& name, std::vector<std::string> args)
-        : name_(name), args_(std::move(args)) {}
+    PrototypeAST(const std::string& name, std::vector<std::string> args, bool is_operator = false, int op_precedence = 0)
+        : name_(name), args_(std::move(args)), is_operator_(is_operator), op_precedence_(op_precedence) {}
     
     const std::string& name() const { return name_; }
+
+    int op_precedence() const { return op_precedence_; }
+
+    bool IsUnaryOp() const { return is_operator_ && args_.size() == 1; }
+
+    bool IsBinaryOp() const { return is_operator_ && args_.size() == 2; }
+
+    char GetOpName() { return name_[name_.size() - 1]; }
 
     llvm::Value* CodeGen();
 
   private:
     std::string name_;
     std::vector<std::string> args_;
+    bool is_operator_;
+    int op_precedence_;
 };
 
 // function implementation

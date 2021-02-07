@@ -9,6 +9,11 @@ int GetNextToken() {
     return g_current_token = GetToken();
 }
 
+// define precedence for operator
+std::unordered_map<char, int> g_binop_precedence = {
+    { '<', 10 }, { '>', 10 }, { '+', 20 }, { '-', 20 }, { '*', 40 }, { '/', 40 }
+};
+
 // numberexpr ::= number
 std::unique_ptr<ExprAST> ParseNumberExpr() {
     auto result = std::make_unique<NumberExprAST>(g_number_val);
@@ -139,16 +144,36 @@ std::unique_ptr<ExprAST> ParseForExpr() {
 // prototype
 //   ::= id ( id id ... id )
 std::unique_ptr<PrototypeAST> ParsePrototype() {
-    std::string function_name = g_identifier_str;
+    std::string function_name;
+    bool is_operator = false;
+    int precedence = 0;
 
-    GetNextToken();  // eat (
+    switch (g_current_token) {
+        case TOKEN_IDENTIFIER: {
+            function_name = g_identifier_str;
+            is_operator = false;
+            GetNextToken(); // eat id
+            break;
+        }
+        case TOKEN_BINARY: {
+            GetNextToken(); // eat binary
+            function_name = "binary";
+            function_name += (char) (g_current_token);
+            is_operator = true;
+            GetNextToken();  // eat binop
+            precedence = g_number_val;
+            GetNextToken();  // eat precedence
+            break;
+        }
+    }
+
     std::vector<std::string> arg_names;
     while (GetNextToken() == TOKEN_IDENTIFIER) {
         arg_names.push_back(g_identifier_str);
     }
-    GetNextToken();  // eat )
+    GetNextToken(); // eat )
 
-    return std::make_unique<PrototypeAST>(function_name, std::move(arg_names));
+    return std::make_unique<PrototypeAST>(function_name, arg_names, is_operator, precedence);
 }
 
 // definition ::= def prototype expression
