@@ -275,20 +275,20 @@ llvm::Function* GetFunction(const std::string& name) {
 }
 
 void ReCreateModule() {
-    // Open a new module.
+    // open a new module
     g_module = std::make_unique<llvm::Module>("my cool jit", g_llvm_context);
     g_module->setDataLayout(g_jit->getTargetMachine().createDataLayout());
 
-    // Create a new pass manager attached to g_module.
+    // create a new pass manager attached to g_module
     g_fpm = std::make_unique<llvm::legacy::FunctionPassManager>(g_module.get());
 
-    // Do simple "peephole" optimizations and bit-twiddling optzns.
+    // do simple "peephole" optimizations and bit-twiddling optzns
     g_fpm->add(llvm::createInstructionCombiningPass());
-    // Reassociate expressions.
+    // reassociate expressions
     g_fpm->add(llvm::createReassociatePass());
-    // Eliminate Common SubExpressions.
+    // eliminate Common SubExpressions
     g_fpm->add(llvm::createGVNPass());
-    // Simplify the control flow graph (deleting unreachable blocks, etc).
+    // simplify the control flow graph (deleting unreachable blocks, etc)
     g_fpm->add(llvm::createCFGSimplificationPass());
 
     g_fpm->doInitialization();
