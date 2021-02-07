@@ -36,7 +36,7 @@ extern llvm::IRBuilder<> g_ir_builder;
 extern std::unique_ptr<llvm::Module> g_module;
 
 // Used for recording the parameters of function
-extern std::unordered_map<std::string, llvm::Value*> g_named_values;
+extern std::unordered_map<std::string, llvm::AllocaInst*> g_named_values;
 
 // Function Passes Manager for CodeGen Optimizer
 extern std::unique_ptr<llvm::legacy::FunctionPassManager> g_fpm;
@@ -50,6 +50,9 @@ extern std::unique_ptr<llvm::orc::KaleidoscopeJIT> g_jit;
 */
 // query function interface via function name
 llvm::Function* GetFunction(const std::string& name);
+
+// add memory allocate instruction in the entry-block of function
+llvm::AllocaInst* CreateEntryBlockAlloca(llvm::Function* func, const std::string& var_name);
 
 void ReCreateModule();
 

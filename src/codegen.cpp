@@ -14,7 +14,7 @@ llvm::IRBuilder<> g_ir_builder(g_llvm_context);
 std::unique_ptr<llvm::Module> g_module;
 
 // Used for recording the parameters of function
-std::unordered_map<std::string, llvm::Value*> g_named_values;
+std::unordered_map<std::string, llvm::AllocaInst*> g_named_values;
 
 // Function Passes Manager for CodeGen Optimizer
 std::unique_ptr<llvm::legacy::FunctionPassManager> g_fpm;
@@ -31,7 +31,8 @@ llvm::Value* NumberExprAST::CodeGen() {
 }
 
 llvm::Value* VariableExprAST::CodeGen() {
-    return g_named_values.at(name_);
+    llvm::AllocaInst* val = g_named_values.at(name_);
+    return g_ir_builder.CreateLoad(val, name_.c_str());
 }
 
 llvm::Value* BinaryExprAST::CodeGen() {
@@ -104,16 +105,20 @@ llvm::Value* FunctionAST::CodeGen() {
         g_binop_precedence[proto.GetOpName()] = proto.op_precedence();
     }
 
-    // create a Block and set insert point
-    // llvm block can be used for defining control flow graph.
-    // since currently we don't implement control flow, so create a single block is good enough
+    // create a block and set insert point
+    // llvm block can be used for defining control flow graph
     llvm::BasicBlock* block = llvm::BasicBlock::Create(g_llvm_context, "entry", func);
     g_ir_builder.SetInsertPoint(block);
 
     // register function arguments to `g_named_values`, so VariableExprAST can codegen
     g_named_values.clear();
     for (llvm::Value& arg : func->args()) {
-        g_named_values[(std::string) arg.getName()] = &arg;
+        // create a variable on stack for each function argument & assign the initial value
+        // set argument name and corresponding variable into g_named_values
+        // so that in later code piece we can ref the on stack variable
+        llvm::AllocaInst* var = CreateEntryBlockAlloca(func, (std::string) arg.getName());
+        g_ir_builder.CreateStore(&arg, var);
+        g_named_values[(std::string) arg.getName()] = var;
     }
 
     // codegen body then return
@@ -194,29 +199,26 @@ llvm::Value* IfExprAST::CodeGen() {
 }
 
 llvm::Value* ForExprAST::CodeGen() {
-    // codegen start
-    llvm::Value* start_val = start_expr_->CodeGen();
-
     // get current function
     llvm::Function* func = g_ir_builder.GetInsertBlock()->getParent();
 
-    // save current block
-    llvm::BasicBlock* pre_block = g_ir_builder.GetInsertBlock();
+    // create variable on stack, no more phi node
+    llvm::AllocaInst* var = CreateEntryBlockAlloca(func, var_name_);
+
+    // codegen start
+    llvm::Value* start_val = start_expr_->CodeGen();
+
+    // assign the start_val to var
+    g_ir_builder.CreateStore(start_val, var);
 
     // add a loop block into current function
     llvm::BasicBlock* loop_block = llvm::BasicBlock::Create(g_llvm_context, "forloop", func);
 
-    // add instruction to jump to loop_block
+    // add instruction: jump to loop_block
     g_ir_builder.CreateBr(loop_block);
 
-    // now begin to add instructions in loop_block
+    // now begin to add instructions into loop_block
     g_ir_builder.SetInsertPoint(loop_block);
-
-    llvm::PHINode* var = g_ir_builder.CreatePHI(
-        llvm::Type::getDoubleTy(g_llvm_context), 2, var_name_.c_str());
-
-    // if comes from pre_block, then use start_val
-    var->addIncoming(start_val, pre_block);
 
     // now we have a new variable, since it may be referenced in the later code piece
     // so we need to register it into g_named_values
@@ -224,14 +226,18 @@ llvm::Value* ForExprAST::CodeGen() {
     // currently we ignore this special case for convenience
     g_named_values[var_name_] = var;
 
-    // add body instructions inside loop_block
+    // add body instructions into loop_block
     body_expr_->CodeGen();
 
     // codegen step_expr
     llvm::Value* step_value = step_expr_->CodeGen();
 
-    // next_var = var + step_value
-    llvm::Value* next_value = g_ir_builder.CreateFAdd(var, step_value, "nextvar");
+    // var = var + step_value
+    llvm::Value* cur_value = g_ir_builder.CreateLoad(var);
+    llvm::Value* next_value = g_ir_builder.CreateFAdd(cur_value, step_value, "nextvar");
+    
+    // assign next_value back to var
+    g_ir_builder.CreateStore(next_value, var);
 
     // codegen end_expr
     llvm::Value* end_value = end_expr_->CodeGen();
@@ -240,7 +246,8 @@ llvm::Value* ForExprAST::CodeGen() {
     end_value = g_ir_builder.CreateFCmpONE(
         end_value, llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(0.0)), "loopcond");
 
-    // similar to if-then-else, the block may be changed later, save the current block
+    // similar to if-then-else, the block may be changed due to `body_expr_->CodeGen()`
+    // get the most outer block via `g_ir_builder.GetInsertBlock()`
     llvm::BasicBlock* loop_end_block = g_ir_builder.GetInsertBlock();
 
     // create block for loop ends
@@ -249,11 +256,8 @@ llvm::Value* ForExprAST::CodeGen() {
     // use end_value to choose enter loop_block again or finish loop
     g_ir_builder.CreateCondBr(end_value, loop_block, after_block);
 
-    // add instructions in after_block
+    // add instructions into after_block
     g_ir_builder.SetInsertPoint(after_block);
-
-    // if loops again, use the next_value
-    var->addIncoming(next_value, loop_end_block);
 
     // erase var_name when loop ends
     g_named_values.erase(var_name_);
@@ -272,6 +276,12 @@ llvm::Function* GetFunction(const std::string& name) {
     
     // declare function (use PrototypeAST to CodeGen)
     return (llvm::Function*) name2proto_ast.at(name)->CodeGen();
+}
+
+// add memory allocate instruction in the entry-block of function
+llvm::AllocaInst* CreateEntryBlockAlloca(llvm::Function* func, const std::string& var_name) {
+    llvm::IRBuilder<> ir_builder(&(func->getEntryBlock()), func->getEntryBlock().begin());
+    return ir_builder.CreateAlloca(llvm::Type::getDoubleTy(g_llvm_context), nullptr, var_name.c_str());
 }
 
 void ReCreateModule() {
