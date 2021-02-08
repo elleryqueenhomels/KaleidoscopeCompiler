@@ -292,6 +292,8 @@ void ReCreateModule() {
     // create a new pass manager attached to g_module
     g_fpm = std::make_unique<llvm::legacy::FunctionPassManager>(g_module.get());
 
+    // Promote allocas to registers.
+    g_fpm->add(llvm::createPromoteMemoryToRegisterPass());
     // do simple "peephole" optimizations and bit-twiddling optzns
     g_fpm->add(llvm::createInstructionCombiningPass());
     // reassociate expressions
