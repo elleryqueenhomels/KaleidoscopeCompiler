@@ -38,28 +38,72 @@ llvm::Value* VariableExprAST::CodeGen() {
 llvm::Value* BinaryExprAST::CodeGen() {
     llvm::Value* lhs = lhs_->CodeGen();
     llvm::Value* rhs = rhs_->CodeGen();
-    switch (op_) {
-        case '<': {
-            llvm::Value* tmp = g_ir_builder.CreateFCmpULT(lhs, rhs, "ltcmptmp");
-            // convert 0/1 to 0.0/1.0
-            return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
-        }
-        case '>': {
-            llvm::Value* tmp = g_ir_builder.CreateFCmpUGT(lhs, rhs, "gtcmptmp");
-            // convert 0/1 to 0.0/1.0
-            return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
-        }
-        case '+': return g_ir_builder.CreateFAdd(lhs, rhs, "addtmp");
-        case '-': return g_ir_builder.CreateFSub(lhs, rhs, "subtmp");
-        case '*': return g_ir_builder.CreateFMul(lhs, rhs, "multmp");
-        case '/': return g_ir_builder.CreateFDiv(lhs, rhs, "divtmp");
-        default: {
-            // user defined operator
-            llvm::Function* func = GetFunction(std::string("binary") + op_);
-            llvm::Value* operands[2] = { lhs, rhs };
-            return g_ir_builder.CreateCall(func, operands, "binop");
-        }
+
+    // if (op_ == "&&") {
+    //     g_ir_builder.CreateFCmpONE(lhs, llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(0.0)), "andleftcond");
+    //     return g_ir_builder.CreateAnd(lhs, rhs, "andtmp");
+    // }
+
+    // if (op_ == "||") {
+    //     return g_ir_builder.CreateOr(lhs, rhs, "ortmp");
+    // }
+
+    if (op_ == "==") {
+        llvm::Value* tmp = g_ir_builder.CreateFCmpUEQ(lhs, rhs, "eqcmptmp");
+        // convert 0/1 to 0.0/1.0
+        return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
     }
+
+    if (op_ == "!=") {
+        llvm::Value* tmp = g_ir_builder.CreateFCmpUNE(lhs, rhs, "necmptmp");
+        // convert 0/1 to 0.0/1.0
+        return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
+    }
+
+    if (op_ == "<=") {
+        llvm::Value* tmp = g_ir_builder.CreateFCmpULE(lhs, rhs, "lecmptmp");
+        // convert 0/1 to 0.0/1.0
+        return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
+    }
+
+    if (op_ == ">=") {
+        llvm::Value* tmp = g_ir_builder.CreateFCmpUGE(lhs, rhs, "gecmptmp");
+        // convert 0/1 to 0.0/1.0
+        return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
+    }
+
+    if (op_ == "<") {
+        llvm::Value* tmp = g_ir_builder.CreateFCmpULT(lhs, rhs, "ltcmptmp");
+        // convert 0/1 to 0.0/1.0
+        return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
+    }
+
+    if (op_ == ">") {
+        llvm::Value* tmp = g_ir_builder.CreateFCmpUGT(lhs, rhs, "gtcmptmp");
+        // convert 0/1 to 0.0/1.0
+        return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
+    }
+
+    if (op_ == "+") {
+        return g_ir_builder.CreateFAdd(lhs, rhs, "addtmp");
+    }
+
+    if (op_ == "-") {
+        return g_ir_builder.CreateFSub(lhs, rhs, "subtmp");
+    }
+
+    if (op_ == "*") {
+        return g_ir_builder.CreateFMul(lhs, rhs, "multmp");
+    }
+
+    if (op_ == "/") {
+        return g_ir_builder.CreateFDiv(lhs, rhs, "divtmp");
+    }
+
+    // user defined operator
+    llvm::Function* func = GetFunction(std::string("binary") + op_);
+    llvm::Value* operands[2] = { lhs, rhs };
+    return g_ir_builder.CreateCall(func, operands, "binop");
 }
 
 llvm::Value* CallExprAST::CodeGen() {

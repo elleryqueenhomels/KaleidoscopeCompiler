@@ -14,6 +14,9 @@ extern std::string g_identifier_str;
 // Filled in if TOKEN_NUMBER
 extern double g_number_val;
 
+// Filled in if TOKEN_OPERATOR
+extern std::string g_operator_str;
+
 
 /**
  * Enum Declare
@@ -29,7 +32,8 @@ enum Token {
     TOKEN_ELSE = -8,
     TOKEN_FOR = -9,
     TOKEN_IN = -10,
-    TOKEN_BINARY = -11
+    TOKEN_BINARY = -11,
+    TOKEN_OPERATOR = -12
 };
 
 

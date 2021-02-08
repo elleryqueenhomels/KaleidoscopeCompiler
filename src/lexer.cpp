@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include <string>
+#include <unordered_set>
 
 
 // Filled in if TOKEN_IDENTIFIER
@@ -7,6 +8,15 @@ std::string g_identifier_str;
 
 // Filled in if TOKEN_NUMBER
 double g_number_val;
+
+// Filled in if TOKEN_OPERATOR
+std::string g_operator_str;
+
+// operator basic characters
+const std::unordered_set<char> operator_char_set = {
+    '<', '>', '=', '!', '&', '|',
+    '+', '-', '*', '/', '%', '~'
+};
 
 // extract a token from stdin
 int GetToken() {
@@ -77,6 +87,15 @@ int GetToken() {
         if (last_char != EOF) {
             return GetToken();
         }
+    }
+
+    // identify operator
+    if (operator_char_set.count(last_char)) {
+        g_operator_str = last_char;
+        while (operator_char_set.count(last_char = getchar())) {
+            g_operator_str += last_char;
+        }
+        return TOKEN_OPERATOR;
     }
 
     // identify end of file

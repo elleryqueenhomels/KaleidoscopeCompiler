@@ -10,8 +10,10 @@ int GetNextToken() {
 }
 
 // define precedence for operator
-std::unordered_map<char, int> g_binop_precedence = {
-    { '<', 10 }, { '>', 10 }, { '+', 20 }, { '-', 20 }, { '*', 40 }, { '/', 40 }
+std::unordered_map<std::string, int> g_binop_precedence = {
+    { "&&", 5 }, { "||", 5 }, { "==", 10 }, { "!=", 10 },
+    { "<", 10 }, { ">", 10 }, { "<=", 10 }, { ">=", 10 },
+    { "+", 20 }, { "-", 20 }, { "*", 40 }, { "/", 40 }
 };
 
 // numberexpr ::= number
@@ -69,8 +71,12 @@ std::unique_ptr<ExprAST> ParsePrimary() {
 }
 
 // get current token precedence
-int GetTokenPrecedence() {
-    auto it = g_binop_precedence.find(g_current_token);
+int GetOperatorPrecedence() {
+    if (g_current_token != TOKEN_OPERATOR) {
+        return -1;
+    }
+
+    auto it = g_binop_precedence.find(g_operator_str);
     return it == g_binop_precedence.end() ? -1 : it->second;
 }
 
@@ -79,21 +85,21 @@ int GetTokenPrecedence() {
 // stop if come across operator whose precedence is less than `min_precedence`
 std::unique_ptr<ExprAST> ParseBinOpRhs(int min_precedence, std::unique_ptr<ExprAST> lhs) {
     while (true) {
-        int current_precedence = GetTokenPrecedence();
+        int current_precedence = GetOperatorPrecedence();
         if (current_precedence < min_precedence) {
             // if current_token is not binop or current_precedence is -1, then stop
             // if come across a operator with lower precedence, also stop
             return lhs;
         }
 
-        int binop = g_current_token;
+        std::string binop = g_operator_str;
         GetNextToken();  // eat binop
 
         auto rhs = ParsePrimary();
         // now we have two possible parsing method
         //   * (lhs binop rhs) binop unparsed
         //   * lhs binop (rhs binop unparsed)
-        int next_precedence = GetTokenPrecedence();
+        int next_precedence = GetOperatorPrecedence();
         if (current_precedence < next_precedence) {
             // first process the next operator (with higher precedence)
             rhs = ParseBinOpRhs(current_precedence + 1, std::move(rhs));
@@ -158,7 +164,7 @@ std::unique_ptr<PrototypeAST> ParsePrototype() {
         case TOKEN_BINARY: {
             GetNextToken(); // eat binary
             function_name = "binary";
-            function_name += (char) (g_current_token);
+            function_name += g_operator_str;
             is_operator = true;
             GetNextToken();  // eat binop
             precedence = g_number_val;

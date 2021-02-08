@@ -15,7 +15,7 @@
 extern int g_current_token;
 
 // define precedence for operator
-extern std::unordered_map<char, int> g_binop_precedence;
+extern std::unordered_map<std::string, int> g_binop_precedence;
 
 // symbol for top level expression
 const std::string top_level_expr_name = "__anon_expr";
@@ -57,13 +57,13 @@ class VariableExprAST : public ExprAST {
 // binary operation expression
 class BinaryExprAST : public ExprAST {
   public:
-    BinaryExprAST(char op, std::unique_ptr<ExprAST> lhs, std::unique_ptr<ExprAST> rhs)
+    BinaryExprAST(const std::string& op, std::unique_ptr<ExprAST> lhs, std::unique_ptr<ExprAST> rhs)
         : op_(op), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
 
     llvm::Value* CodeGen() override;
 
   private:
-    char op_;
+    std::string op_;
     std::unique_ptr<ExprAST> lhs_;
     std::unique_ptr<ExprAST> rhs_;
 };
@@ -134,7 +134,7 @@ class PrototypeAST {
 
     bool IsBinaryOp() const { return is_operator_ && args_.size() == 2; }
 
-    char GetOpName() { return name_[name_.size() - 1]; }
+    const std::string GetOpName() const { return name_.substr(6); }
 
     llvm::Value* CodeGen();
 
@@ -166,7 +166,7 @@ class FunctionAST {
 int GetNextToken();
 
 // get current token precedence
-int GetTokenPrecedence();
+int GetOperatorPrecedence();
 
 // numberexpr ::= number
 std::unique_ptr<ExprAST> ParseNumberExpr();
