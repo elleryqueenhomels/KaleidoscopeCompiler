@@ -11,3 +11,15 @@ def binary** 60 (LHS RHS)
 2.0 >= 1.9
 2.0 <= 2.0
 2.0 <= 2.1
+
+def test(x y z)
+  if x < y && y > z then
+    y
+  else if x < y || x < z then
+    x
+  else
+    z
+
+test(1, 3, 2) # return 3
+test(1, 2, 2) # return 1
+test(5, 4, 2) # return 2

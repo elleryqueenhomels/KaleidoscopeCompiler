@@ -39,14 +39,13 @@ llvm::Value* BinaryExprAST::CodeGen() {
     llvm::Value* lhs = lhs_->CodeGen();
     llvm::Value* rhs = rhs_->CodeGen();
 
-    // if (op_ == "&&") {
-    //     g_ir_builder.CreateFCmpONE(lhs, llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(0.0)), "andleftcond");
-    //     return g_ir_builder.CreateAnd(lhs, rhs, "andtmp");
-    // }
+    if (op_ == "&&") {
+        return g_ir_builder.CreateAnd(lhs, rhs, "andtmp");
+    }
 
-    // if (op_ == "||") {
-    //     return g_ir_builder.CreateOr(lhs, rhs, "ortmp");
-    // }
+    if (op_ == "||") {
+        return g_ir_builder.CreateOr(lhs, rhs, "ortmp");
+    }
 
     if (op_ == "==") {
         llvm::Value* tmp = g_ir_builder.CreateFCmpUEQ(lhs, rhs, "eqcmptmp");
