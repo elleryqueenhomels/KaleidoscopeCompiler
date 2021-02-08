@@ -1,7 +1,7 @@
 def binary** 60 (LHS RHS)
   LHS * RHS + LHS + RHS
 
-6 ** 5
+7 + 6 ** (5 + 7 * 2)
 
 5.0 == 5.0
 5.0 == 5.0001

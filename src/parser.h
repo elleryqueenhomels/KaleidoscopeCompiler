@@ -125,7 +125,7 @@ class PrototypeAST {
   public:
     PrototypeAST(const std::string& name, std::vector<std::string> args, bool is_operator = false, int op_precedence = 0)
         : name_(name), args_(std::move(args)), is_operator_(is_operator), op_precedence_(op_precedence) {}
-    
+
     const std::string& name() const { return name_; }
 
     int op_precedence() const { return op_precedence_; }
@@ -150,7 +150,7 @@ class FunctionAST {
   public:
     FunctionAST(std::unique_ptr<PrototypeAST> proto, std::unique_ptr<ExprAST> body)
         : proto_(std::move(proto)), body_(std::move(body)) {}
-    
+
     llvm::Value* CodeGen();
 
   private:
