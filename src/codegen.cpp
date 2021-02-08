@@ -248,7 +248,7 @@ llvm::Value* ForExprAST::CodeGen() {
 
     // similar to if-then-else, the block may be changed due to `body_expr_->CodeGen()`
     // get the most outer block via `g_ir_builder.GetInsertBlock()`
-    llvm::BasicBlock* loop_end_block = g_ir_builder.GetInsertBlock();
+    // llvm::BasicBlock* loop_end_block = g_ir_builder.GetInsertBlock();
 
     // create block for loop ends
     llvm::BasicBlock* after_block = llvm::BasicBlock::Create(g_llvm_context, "afterloop", func);
