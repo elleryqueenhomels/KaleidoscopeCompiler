@@ -199,9 +199,9 @@ std::unique_ptr<PrototypeAST> ParsePrototype() {
             function_name = "binary";
             function_name += g_operator_str;
             is_operator = true;
-            GetNextToken();  // eat binop
+            GetNextToken();  // eat binary op
             precedence = g_number_val;
-            GetNextToken();  // eat precedence
+            GetNextToken();  // eat op precedence
             break;
         }
     }

@@ -40,7 +40,7 @@ llvm::Value* UnaryExprAST::CodeGen() {
 
     if (op_ == "!") {
         auto zero = llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(0.0));
-        llvm::Value* tmp = g_ir_builder.CreateFCmpUEQ(operand, zero, "nottmp");
+        llvm::Value* tmp = g_ir_builder.CreateFCmpOEQ(operand, zero, "nottmp");
         // convert 0/1 to 0.0/1.0
         return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
     }
@@ -52,7 +52,8 @@ llvm::Value* UnaryExprAST::CodeGen() {
 
     // user defined operator
     llvm::Function* func = GetFunction(std::string("unary") + op_);
-    return g_ir_builder.CreateCall(func, operand, "unaryop");
+    llvm::Value* operands[1] = { operand };
+    return g_ir_builder.CreateCall(func, operands, "unaryop");
 }
 
 llvm::Value* BinaryExprAST::CodeGen() {
@@ -72,37 +73,37 @@ llvm::Value* BinaryExprAST::CodeGen() {
     }
 
     if (op_ == "==") {
-        llvm::Value* tmp = g_ir_builder.CreateFCmpUEQ(lhs, rhs, "eqcmptmp");
+        llvm::Value* tmp = g_ir_builder.CreateFCmpOEQ(lhs, rhs, "eqcmptmp");
         // convert 0/1 to 0.0/1.0
         return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
     }
 
     if (op_ == "!=") {
-        llvm::Value* tmp = g_ir_builder.CreateFCmpUNE(lhs, rhs, "necmptmp");
+        llvm::Value* tmp = g_ir_builder.CreateFCmpONE(lhs, rhs, "necmptmp");
         // convert 0/1 to 0.0/1.0
         return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
     }
 
     if (op_ == "<=") {
-        llvm::Value* tmp = g_ir_builder.CreateFCmpULE(lhs, rhs, "lecmptmp");
+        llvm::Value* tmp = g_ir_builder.CreateFCmpOLE(lhs, rhs, "lecmptmp");
         // convert 0/1 to 0.0/1.0
         return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
     }
 
     if (op_ == ">=") {
-        llvm::Value* tmp = g_ir_builder.CreateFCmpUGE(lhs, rhs, "gecmptmp");
+        llvm::Value* tmp = g_ir_builder.CreateFCmpOGE(lhs, rhs, "gecmptmp");
         // convert 0/1 to 0.0/1.0
         return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
     }
 
     if (op_ == "<") {
-        llvm::Value* tmp = g_ir_builder.CreateFCmpULT(lhs, rhs, "ltcmptmp");
+        llvm::Value* tmp = g_ir_builder.CreateFCmpOLT(lhs, rhs, "ltcmptmp");
         // convert 0/1 to 0.0/1.0
         return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
     }
 
     if (op_ == ">") {
-        llvm::Value* tmp = g_ir_builder.CreateFCmpUGT(lhs, rhs, "gtcmptmp");
+        llvm::Value* tmp = g_ir_builder.CreateFCmpOGT(lhs, rhs, "gtcmptmp");
         // convert 0/1 to 0.0/1.0
         return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
     }

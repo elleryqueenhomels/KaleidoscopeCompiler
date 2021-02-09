@@ -72,7 +72,7 @@ class BinaryExprAST : public ExprAST {
 class UnaryExprAST : public ExprAST {
   public:
     UnaryExprAST(const std::string& op, std::unique_ptr<ExprAST> operand)
-      : op_(op), operand_(std::move(operand)) {}
+        : op_(op), operand_(std::move(operand)) {}
 
     llvm::Value* CodeGen() override;
 
