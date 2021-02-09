@@ -35,24 +35,41 @@ llvm::Value* VariableExprAST::CodeGen() {
     return g_ir_builder.CreateLoad(val, name_.c_str());
 }
 
+llvm::Value* UnaryExprAST::CodeGen() {
+    llvm::Value* operand = operand_->CodeGen();
+
+    if (op_ == "!") {
+        auto zero = llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(0.0));
+        llvm::Value* tmp = g_ir_builder.CreateFCmpUEQ(operand, zero, "nottmp");
+        // convert 0/1 to 0.0/1.0
+        return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
+    }
+
+    if (op_ == "-") {
+        auto zero = llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(0.0));
+        return g_ir_builder.CreateFSub(zero, operand, "negtmp");
+    }
+
+    // user defined operator
+    llvm::Function* func = GetFunction(std::string("unary") + op_);
+    return g_ir_builder.CreateCall(func, operand, "unaryop");
+}
+
 llvm::Value* BinaryExprAST::CodeGen() {
     llvm::Value* lhs = lhs_->CodeGen();
     llvm::Value* rhs = rhs_->CodeGen();
 
     if (op_ == "&&") {
-        return g_ir_builder.CreateAnd(lhs, rhs, "andtmp");
+        llvm::Value* tmp = g_ir_builder.CreateAnd(lhs, rhs, "andtmp");
+        // convert 0/1 to 0.0/1.0
+        return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
     }
 
     if (op_ == "||") {
-        return g_ir_builder.CreateOr(lhs, rhs, "ortmp");
+        llvm::Value* tmp = g_ir_builder.CreateOr(lhs, rhs, "ortmp");
+        // convert 0/1 to 0.0/1.0
+        return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
     }
-
-    // if (op_ == "!") {
-    //     auto zero = llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(0.0));
-    //     llvm::Value* tmp = g_ir_builder.CreateFCmpUEQ(zero, rhs, "nottmp");
-    //     // convert 0/1 to 0.0/1.0
-    //     return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
-    // }
 
     if (op_ == "==") {
         llvm::Value* tmp = g_ir_builder.CreateFCmpUEQ(lhs, rhs, "eqcmptmp");

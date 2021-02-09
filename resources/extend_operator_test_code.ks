@@ -29,3 +29,8 @@ test(1, 2, 1) # return 2
 test(1, 2, 4) # return 4
 test(5, 4, 4) # return 13
 test(6, 7, 8) # return 6
+
+def unary%% (x)
+  x * x
+
+%%7 + %%9 # return 130

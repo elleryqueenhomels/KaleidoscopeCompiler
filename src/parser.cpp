@@ -11,7 +11,7 @@ int GetNextToken() {
 
 // define precedence for operator
 std::unordered_map<std::string, int> g_binop_precedence = {
-    { "&&", 5 }, { "||", 5 }, {  "!",  6 }, { "==", 10 }, { "!=", 10 },
+    { "&&", 5 }, { "||", 5 }, { "==", 10 }, { "!=", 10 },
     { "<", 10 }, { ">", 10 }, { "<=", 10 }, { ">=", 10 },
     { "+", 20 }, { "-", 20 }, {  "*", 40 }, {  "/", 40 }
 };
@@ -66,11 +66,7 @@ std::unique_ptr<ExprAST> ParsePrimary() {
         case '(': return ParseParenExpr();
         case TOKEN_IF: return ParseIfExpr();
         case TOKEN_FOR: return ParseForExpr();
-        case TOKEN_OPERATOR: {
-            // a hacky way to support unary operator
-            auto result = std::make_unique<NumberExprAST>(0.0);
-            return std::move(result);
-        }
+        case TOKEN_OPERATOR: return ParseUnary();
         default: return nullptr;
     }
 }
@@ -115,10 +111,34 @@ std::unique_ptr<ExprAST> ParseBinOpRhs(int min_precedence, std::unique_ptr<ExprA
     }
 }
 
+// unary
+//   ::= primary
+//   ::= '!' unary
+std::unique_ptr<ExprAST> ParseUnary() {
+    // if the current token is not an operator, it must be a primary expr
+    if (g_current_token != TOKEN_OPERATOR) {
+        return ParsePrimary();
+    }
+
+    // if this is a unary operator, read it
+    std::string unaryop = g_operator_str;
+    GetNextToken();  // eat unary op
+
+    if (auto operand = ParseUnary()) {
+        return std::make_unique<UnaryExprAST>(unaryop, std::move(operand));
+    }
+
+    return nullptr;
+}
+
 // expression
 //   ::= primary [binop primary] [binop primary] ...
 std::unique_ptr<ExprAST> ParseExpression() {
-    auto lhs = ParsePrimary();
+    auto lhs = ParseUnary();
+    if (!lhs) {
+        return nullptr;
+    }
+
     return ParseBinOpRhs(0, std::move(lhs));
 }
 
@@ -164,6 +184,14 @@ std::unique_ptr<PrototypeAST> ParsePrototype() {
             function_name = g_identifier_str;
             is_operator = false;
             GetNextToken(); // eat id
+            break;
+        }
+        case TOKEN_UNARY: {
+            GetNextToken(); // eat unary
+            function_name = "unary";
+            function_name += g_operator_str;
+            is_operator = true;
+            GetNextToken(); // eat unary op
             break;
         }
         case TOKEN_BINARY: {

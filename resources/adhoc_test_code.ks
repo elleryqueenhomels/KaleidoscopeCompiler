@@ -31,11 +31,18 @@ test(5, 4, 2) # return 2
 def test(x y z)
   if !(x < y && y > z) then
     y
-  else if !(x < y && y > z) then
+  else if !(x > y || x < z) then
     x
   else
     z
 
 test(5, 4, 2) # return 4
-test(3, 2, 1) # return 3
-test(1, 2, 2) # return 2
+test(3, 4, 1) # return 3
+test(1, 3, 2) # return 2
+
+!(-5 >= 2 && -4 >= 3)
+
+def unary%% (x)
+  x * x
+
+%%7 + %%9 # return 130

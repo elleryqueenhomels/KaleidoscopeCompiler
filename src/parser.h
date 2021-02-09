@@ -68,6 +68,19 @@ class BinaryExprAST : public ExprAST {
     std::unique_ptr<ExprAST> rhs_;
 };
 
+// unary operation expression
+class UnaryExprAST : public ExprAST {
+  public:
+    UnaryExprAST(const std::string& op, std::unique_ptr<ExprAST> operand)
+      : op_(op), operand_(std::move(operand)) {}
+
+    llvm::Value* CodeGen() override;
+
+  private:
+    std::string op_;
+    std::unique_ptr<ExprAST> operand_;
+};
+
 // function call expression
 class CallExprAST : public ExprAST {
   public:
@@ -134,7 +147,7 @@ class PrototypeAST {
 
     bool IsBinaryOp() const { return is_operator_ && args_.size() == 2; }
 
-    const std::string GetOpName() const { return name_.substr(6); }
+    const std::string GetOpName() const { return IsBinaryOp() ? name_.substr(6) : name_.substr(5); }
 
     llvm::Value* CodeGen();
 
@@ -189,6 +202,11 @@ std::unique_ptr<ExprAST> ParsePrimary();
 //   lhs [binop primary] [binop primary] ... 
 // stop if come across operator whose precedence is less than `min_precedence`
 std::unique_ptr<ExprAST> ParseBinOpRhs(int min_precedence, std::unique_ptr<ExprAST> lhs);
+
+// unary
+//   ::= primary
+//   ::= '!' unary
+std::unique_ptr<ExprAST> ParseUnary();
 
 // expression 
 //   ::= primary [binop primary] [binop primary] ... 

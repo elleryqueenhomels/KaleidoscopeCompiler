@@ -59,6 +59,9 @@ int GetToken() {
         if (g_identifier_str == "binary") {
             return TOKEN_BINARY;
         }
+        if (g_identifier_str == "unary") {
+            return TOKEN_UNARY;
+        }
         return TOKEN_IDENTIFIER;
     }
 

@@ -33,7 +33,8 @@ enum Token {
     TOKEN_FOR = -9,
     TOKEN_IN = -10,
     TOKEN_BINARY = -11,
-    TOKEN_OPERATOR = -12
+    TOKEN_UNARY = -12,
+    TOKEN_OPERATOR = -13
 };
 
 
