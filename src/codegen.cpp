@@ -47,6 +47,13 @@ llvm::Value* BinaryExprAST::CodeGen() {
         return g_ir_builder.CreateOr(lhs, rhs, "ortmp");
     }
 
+    // if (op_ == "!") {
+    //     auto zero = llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(0.0));
+    //     llvm::Value* tmp = g_ir_builder.CreateFCmpUEQ(zero, rhs, "nottmp");
+    //     // convert 0/1 to 0.0/1.0
+    //     return g_ir_builder.CreateUIToFP(tmp, llvm::Type::getDoubleTy(g_llvm_context), "booltmp");
+    // }
+
     if (op_ == "==") {
         llvm::Value* tmp = g_ir_builder.CreateFCmpUEQ(lhs, rhs, "eqcmptmp");
         // convert 0/1 to 0.0/1.0

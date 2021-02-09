@@ -11,9 +11,9 @@ int GetNextToken() {
 
 // define precedence for operator
 std::unordered_map<std::string, int> g_binop_precedence = {
-    { "&&", 5 }, { "||", 5 }, { "==", 10 }, { "!=", 10 },
+    { "&&", 5 }, { "||", 5 }, {  "!",  6 }, { "==", 10 }, { "!=", 10 },
     { "<", 10 }, { ">", 10 }, { "<=", 10 }, { ">=", 10 },
-    { "+", 20 }, { "-", 20 }, { "*", 40 }, { "/", 40 }
+    { "+", 20 }, { "-", 20 }, {  "*", 40 }, {  "/", 40 }
 };
 
 // numberexpr ::= number
@@ -66,6 +66,11 @@ std::unique_ptr<ExprAST> ParsePrimary() {
         case '(': return ParseParenExpr();
         case TOKEN_IF: return ParseIfExpr();
         case TOKEN_FOR: return ParseForExpr();
+        case TOKEN_OPERATOR: {
+            // a hacky way to support unary operator
+            auto result = std::make_unique<NumberExprAST>(0.0);
+            return std::move(result);
+        }
         default: return nullptr;
     }
 }
