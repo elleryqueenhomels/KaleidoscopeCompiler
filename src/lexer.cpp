@@ -14,8 +14,8 @@ std::string g_operator_str;
 
 // operator basic characters
 const std::unordered_set<char> operator_char_set = {
-    '<', '>', '=', '!', '&', '|',
-    '+', '-', '*', '/', '%', '~'
+    '<', '>', '=', '!', '&', '|', '~',
+    '+', '-', '*', '/', '%', '$', '^'
 };
 
 // extract a token from stdin

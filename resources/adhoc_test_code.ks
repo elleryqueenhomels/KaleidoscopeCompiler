@@ -51,3 +51,15 @@ def unary%% (x)
 
 6 * -5 + 7
 6 * !1 + 0
+
+
+def fibo(n)
+  if n < 3 then
+    1
+  else
+    fibo(n - 1) + fibo(n - 2)
+
+def unary$ (x)
+  fibo(x)
+
+$6
