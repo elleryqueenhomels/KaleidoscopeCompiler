@@ -273,26 +273,36 @@ llvm::Value* ForExprAST::CodeGen() {
     // create variable on stack, no more phi node
     llvm::AllocaInst* var = CreateEntryBlockAlloca(func, var_name_);
 
+    // now we have a new variable, since it may be referenced in the later code piece
+    // so we need to register it into g_named_values
+    // NOTE: var_name may be duplicated with function argument names
+    // currently we ignore this special case for convenience
+    g_named_values[var_name_] = var;
+
     // codegen start
     llvm::Value* start_val = start_expr_->CodeGen();
 
     // assign the start_val to var
     g_ir_builder.CreateStore(start_val, var);
 
+    // codegen end_expr
+    llvm::Value* end_value = end_expr_->CodeGen();
+
+    // end_value = (end_value != 0.0)
+    end_value = g_ir_builder.CreateFCmpONE(
+        end_value, llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(0.0)), "startcond");
+
     // add a loop block into current function
     llvm::BasicBlock* loop_block = llvm::BasicBlock::Create(g_llvm_context, "forloop", func);
 
-    // add instruction: jump to loop_block
-    g_ir_builder.CreateBr(loop_block);
+    // create block for loop ends
+    llvm::BasicBlock* after_block = llvm::BasicBlock::Create(g_llvm_context, "afterloop", func);
+
+    // use end_value to choose enter loop_block or not
+    g_ir_builder.CreateCondBr(end_value, loop_block, after_block);
 
     // now begin to add instructions into loop_block
     g_ir_builder.SetInsertPoint(loop_block);
-
-    // now we have a new variable, since it may be referenced in the later code piece
-    // so we need to register it into g_named_values
-    // NOTE: var_name may be duplicated with function argument names
-    // currently we ignore this special case for convenience
-    g_named_values[var_name_] = var;
 
     // add body instructions into loop_block
     body_expr_->CodeGen();
@@ -301,25 +311,18 @@ llvm::Value* ForExprAST::CodeGen() {
     llvm::Value* step_value = step_expr_->CodeGen();
 
     // var = var + step_value
-    llvm::Value* cur_value = g_ir_builder.CreateLoad(var);
-    llvm::Value* next_value = g_ir_builder.CreateFAdd(cur_value, step_value, "nextvar");
-    
+    llvm::Value* curr_value = g_ir_builder.CreateLoad(var);
+    llvm::Value* next_value = g_ir_builder.CreateFAdd(curr_value, step_value, "nextvar");
+
     // assign next_value back to var
     g_ir_builder.CreateStore(next_value, var);
 
     // codegen end_expr
-    llvm::Value* end_value = end_expr_->CodeGen();
+    end_value = end_expr_->CodeGen();
 
     // end_value = (end_value != 0.0)
     end_value = g_ir_builder.CreateFCmpONE(
         end_value, llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(0.0)), "loopcond");
-
-    // similar to if-then-else, the block may be changed due to `body_expr_->CodeGen()`
-    // get the most outer block via `g_ir_builder.GetInsertBlock()`
-    // llvm::BasicBlock* loop_end_block = g_ir_builder.GetInsertBlock();
-
-    // create block for loop ends
-    llvm::BasicBlock* after_block = llvm::BasicBlock::Create(g_llvm_context, "afterloop", func);
 
     // use end_value to choose enter loop_block again or finish loop
     g_ir_builder.CreateCondBr(end_value, loop_block, after_block);
