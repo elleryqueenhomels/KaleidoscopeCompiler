@@ -207,7 +207,14 @@ llvm::Value* FunctionAST::CodeGen() {
     }
 
     // codegen body then return
-    llvm::Value* ret_val = body_->CodeGen();
+    llvm::Value* ret_val = nullptr;
+    for (auto& expr : body_) {
+        ret_val = expr->CodeGen();
+    }
+    if (ret_val == nullptr) {
+        ret_val = llvm::Constant::getNullValue(llvm::Type::getDoubleTy(g_llvm_context));
+    }
+
     g_ir_builder.CreateRet(ret_val);
     llvm::verifyFunction(*func);
 

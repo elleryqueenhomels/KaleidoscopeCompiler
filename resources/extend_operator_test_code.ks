@@ -8,6 +8,7 @@ def binary|| 5 (LHS RHS)
       0
     end
   end
+end
 
 def binary&& 5 (LHS RHS)
   if LHS then
@@ -19,6 +20,7 @@ def binary&& 5 (LHS RHS)
   else
     0
   end
+end
 
 def test(x y z)
   if x < y && y > z then
@@ -34,6 +36,7 @@ def test(x y z)
       end
     end
   end
+end
 
 test(1, 2, 1) # return 2
 test(1, 2, 4) # return 4
@@ -42,5 +45,6 @@ test(6, 7, 8) # return 6
 
 def unary%% (x)
   x * x
+end
 
 %%7 + %%9 # return 130

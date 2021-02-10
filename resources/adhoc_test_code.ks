@@ -1,5 +1,6 @@
 def binary** 60 (LHS RHS)
   LHS * RHS + LHS + RHS
+end
 
 7 + 6 ** (5 + 7 * 2)
 
@@ -22,6 +23,7 @@ def test(x y z)
       z
     end
   end
+end
 
 test(1, 3, 2) # return 3
 test(1, 2, 2) # return 1
@@ -41,6 +43,7 @@ def test(x y z)
       z
     end
   end
+end
 
 test(5, 4, 2)  # return 4
 test(3, 4, 1)  # return 3
@@ -51,6 +54,7 @@ test(-5,-1,-2) # return -2
 
 def unary%% (x)
   x * x
+end
 
 %%7 + %%9 # return 130
 %%7 - %%9 # return -32
@@ -65,8 +69,10 @@ def fibo(n)
   else
     fibo(n - 1) + fibo(n - 2)
   end
+end
 
 def unary$ (x)
   fibo(x)
+end
 
 $6

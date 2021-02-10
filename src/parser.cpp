@@ -222,8 +222,13 @@ std::unique_ptr<PrototypeAST> ParsePrototype() {
 std::unique_ptr<FunctionAST> ParseDefinition() {
     GetNextToken();  // eat def
     auto proto = ParsePrototype();
-    auto expr = ParseExpression();
-    return std::make_unique<FunctionAST>(std::move(proto), std::move(expr));
+    std::vector<std::unique_ptr<ExprAST>> body;
+    while (g_current_token != TOKEN_END) {
+        auto expr = ParseExpression();
+        body.push_back(std::move(expr));
+    }
+    GetNextToken();  // eat end
+    return std::make_unique<FunctionAST>(std::move(proto), std::move(body));
 }
 
 // external ::= extern prototype
@@ -234,7 +239,9 @@ std::unique_ptr<PrototypeAST> ParseExtern() {
 
 // toplevelexpr ::= expression
 std::unique_ptr<FunctionAST> ParseTopLevelExpr() {
-    auto expr = ParseExpression();
     auto proto = std::make_unique<PrototypeAST>(top_level_expr_name, std::vector<std::string>());
-    return std::make_unique<FunctionAST>(std::move(proto), std::move(expr));
+    auto expr = ParseExpression();
+    std::vector<std::unique_ptr<ExprAST>> body;
+    body.push_back(std::move(expr));
+    return std::make_unique<FunctionAST>(std::move(proto), std::move(body));
 }

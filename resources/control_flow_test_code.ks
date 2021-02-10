@@ -6,6 +6,7 @@ def foo(x)
     else
         foo(x - 1) + foo(x - 2)
     end
+end
 
 for i = 1, i < 10, 1.0 in
     printd(foo(i))

@@ -9,6 +9,7 @@ def binary| 5 (LHS RHS)
       0
     end
   end
+end
 
 1 | 0
 0 | 1
@@ -26,6 +27,7 @@ def binary& 5 (LHS RHS)
   else
     0
   end
+end
 
 1 & 1
 1 & 0
@@ -43,6 +45,7 @@ def binary= 9 (LHS RHS)
       1
     end
   end
+end
 
 5.0 = 5.0
 5.0 = 5.00001

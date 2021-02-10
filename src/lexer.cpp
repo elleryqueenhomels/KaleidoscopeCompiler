@@ -41,6 +41,9 @@ int GetToken() {
         if (g_identifier_str == "extern") {
             return TOKEN_EXTERN;
         }
+        if (g_identifier_str == "end") {
+            return TOKEN_END;
+        }
         if (g_identifier_str == "if") {
             return TOKEN_IF;
         }
@@ -49,9 +52,6 @@ int GetToken() {
         }
         if (g_identifier_str == "else") {
             return TOKEN_ELSE;
-        }
-        if (g_identifier_str == "end") {
-            return TOKEN_END;
         }
         if (g_identifier_str == "for") { 
             return TOKEN_FOR; 

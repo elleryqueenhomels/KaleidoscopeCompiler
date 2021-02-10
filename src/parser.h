@@ -163,14 +163,14 @@ class PrototypeAST {
 // function implementation
 class FunctionAST {
   public:
-    FunctionAST(std::unique_ptr<PrototypeAST> proto, std::unique_ptr<ExprAST> body)
+    FunctionAST(std::unique_ptr<PrototypeAST> proto, std::vector<std::unique_ptr<ExprAST>> body)
         : proto_(std::move(proto)), body_(std::move(body)) {}
 
     llvm::Value* CodeGen();
 
   private:
     std::unique_ptr<PrototypeAST> proto_;
-    std::unique_ptr<ExprAST> body_;
+    std::vector<std::unique_ptr<ExprAST>> body_;
 };
 
 

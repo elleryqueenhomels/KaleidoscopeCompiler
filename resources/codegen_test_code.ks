@@ -2,11 +2,13 @@
 
 def foo(a b)
     a*a + 2*a*b + b*b
+end
 
 foo(2, 3)
 
 def bar(a)
     foo(a, 4) + bar(31337)
+end
 
 extern cos(x)
 
@@ -20,3 +22,4 @@ cos(3.1415926)
 
 def test(x)
     (1 + 2 + x) * (x + (1 + 2))
+end
