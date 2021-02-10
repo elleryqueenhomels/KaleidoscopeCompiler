@@ -209,9 +209,14 @@ std::unique_ptr<PrototypeAST> ParsePrototype() {
         }
     }
 
+    GetNextToken(); // eat (
     std::vector<std::string> arg_names;
-    while (GetNextToken() == TOKEN_IDENTIFIER) {
+    while (g_current_token != ')') {
         arg_names.push_back(g_identifier_str);
+        GetNextToken(); // eat arg
+        if (g_current_token == ',') {
+            GetNextToken(); // eat ,
+        }
     }
     GetNextToken(); // eat )
 
