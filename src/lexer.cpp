@@ -18,6 +18,11 @@ const std::unordered_set<char> operator_char_set = {
     '+', '-', '*', '/', '%', '$', '^'
 };
 
+// is valid variable name element
+bool isVarChar(const char& ch) {
+    return isalnum(ch) || ch == '_';
+}
+
 // extract a token from stdin
 int GetToken() {
     static int last_char = ' ';
@@ -28,10 +33,10 @@ int GetToken() {
     }
 
     // identify character
-    if (isalpha(last_char)) {
+    if (isalpha(last_char) || last_char == '_') {
         g_identifier_str = last_char;
 
-        while (isalnum((last_char = getchar()))) {
+        while (isVarChar((last_char = getchar()))) {
             g_identifier_str += last_char;
         }
 
