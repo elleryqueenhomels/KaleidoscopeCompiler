@@ -30,11 +30,12 @@ enum Token {
     TOKEN_IF = -6,
     TOKEN_THEN = -7,
     TOKEN_ELSE = -8,
-    TOKEN_FOR = -9,
-    TOKEN_IN = -10,
-    TOKEN_BINARY = -11,
-    TOKEN_UNARY = -12,
-    TOKEN_OPERATOR = -13
+    TOKEN_END = -9,
+    TOKEN_FOR = -10,
+    TOKEN_IN = -11,
+    TOKEN_BINARY = -12,
+    TOKEN_UNARY = -13,
+    TOKEN_OPERATOR = -14
 };
 
 

@@ -57,6 +57,23 @@ llvm::Value* UnaryExprAST::CodeGen() {
 }
 
 llvm::Value* BinaryExprAST::CodeGen() {
+    // handle assignment at first if this is an assignment statement
+    if (op_ == "=") {
+        llvm::AllocaInst* var;
+        VariableExprAST* leftVar = (VariableExprAST*) lhs_.get();
+        if (g_named_values.find(leftVar->name()) == g_named_values.end()) {
+            llvm::Function* func = g_ir_builder.GetInsertBlock()->getParent();
+            var = CreateEntryBlockAlloca(func, leftVar->name());
+            g_named_values[leftVar->name()] = var;
+        } else {
+            var = g_named_values[leftVar->name()];
+        }
+
+        llvm::Value* rightVal = rhs_->CodeGen();
+        g_ir_builder.CreateStore(rightVal, var);
+        return leftVar->CodeGen();
+    }
+
     llvm::Value* lhs = lhs_->CodeGen();
     llvm::Value* rhs = rhs_->CodeGen();
 

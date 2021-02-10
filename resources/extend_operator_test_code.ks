@@ -1,10 +1,13 @@
 def binary|| 5 (LHS RHS)
   if LHS then
     1
-  else if RHS then
-    1
   else
-    0
+    if RHS then
+      1
+    else
+      0
+    end
+  end
 
 def binary&& 5 (LHS RHS)
   if LHS then
@@ -12,18 +15,25 @@ def binary&& 5 (LHS RHS)
       1
     else
       0
+    end
   else
     0
+  end
 
 def test(x y z)
-    if x < y && y > z then
-        y
-    else if x + y <= z then
-        z
-    else if x > y || x > z then
-        x + y + z
+  if x < y && y > z then
+    y
+  else
+    if x + y <= z then
+      z
     else
+      if x > y || x > z then
+        x + y + z
+      else
         x
+      end
+    end
+  end
 
 test(1, 2, 1) # return 2
 test(1, 2, 4) # return 4

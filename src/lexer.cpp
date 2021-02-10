@@ -50,6 +50,9 @@ int GetToken() {
         if (g_identifier_str == "else") {
             return TOKEN_ELSE;
         }
+        if (g_identifier_str == "end") {
+            return TOKEN_END;
+        }
         if (g_identifier_str == "for") { 
             return TOKEN_FOR; 
         }

@@ -48,6 +48,8 @@ class VariableExprAST : public ExprAST {
   public:
     VariableExprAST(const std::string& name) : name_(name) {}
 
+    const std::string& name() const { return name_; }
+
     llvm::Value* CodeGen() override;
 
   private:

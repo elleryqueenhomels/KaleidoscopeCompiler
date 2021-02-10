@@ -13,7 +13,8 @@ int GetNextToken() {
 std::unordered_map<std::string, int> g_binop_precedence = {
     { "&&", 5 }, { "||", 5 }, { "==", 10 }, { "!=", 10 },
     { "<", 10 }, { ">", 10 }, { "<=", 10 }, { ">=", 10 },
-    { "+", 20 }, { "-", 20 }, {  "*", 40 }, {  "/", 40 }
+    { "+", 20 }, { "-", 20 }, {  "*", 40 }, {  "/", 40 },
+    { "=",  1 }
 };
 
 // numberexpr ::= number
@@ -37,7 +38,7 @@ std::unique_ptr<ExprAST> ParseParenExpr() {
 std::unique_ptr<ExprAST> ParseIdentifierExpr() {
     std::string id = g_identifier_str;
 
-    GetNextToken();
+    GetNextToken();  // eat identifier
     if (g_current_token != '(') { 
         return std::make_unique<VariableExprAST>(id); 
     }
@@ -151,6 +152,7 @@ std::unique_ptr<ExprAST> ParseIfExpr() {
     std::unique_ptr<ExprAST> then_expr = ParseExpression();
     GetNextToken(); // eat else
     std::unique_ptr<ExprAST> else_expr = ParseExpression();
+    GetNextToken(); // eat end
     return std::make_unique<IfExprAST>(std::move(cond), std::move(then_expr), std::move(else_expr));
 }
 
@@ -168,6 +170,7 @@ std::unique_ptr<ExprAST> ParseForExpr() {
     std::unique_ptr<ExprAST> step_expr = ParseExpression();
     GetNextToken(); // eat in
     std::unique_ptr<ExprAST> body_expr = ParseExpression();
+    GetNextToken(); // eat end
     return std::make_unique<ForExprAST>(
         var_name, std::move(start_expr), std::move(end_expr), std::move(step_expr), std::move(body_expr));
 }
