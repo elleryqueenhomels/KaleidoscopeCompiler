@@ -35,12 +35,12 @@ std::unique_ptr<ExprAST> ParseParenExpr() {
 /// identifierexpr
 ///   ::= identifier
 ///   ::= identifier ( expression, expression, ..., expression )
-std::unique_ptr<ExprAST> ParseIdentifierExpr() {
+std::unique_ptr<ExprAST> ParseIdentifierExpr(bool is_global_scope) {
     std::string id = g_identifier_str;
 
     GetNextToken();  // eat identifier
-    if (g_current_token != '(') { 
-        return std::make_unique<VariableExprAST>(id); 
+    if (g_current_token != '(') {
+        return std::make_unique<VariableExprAST>(id, is_global_scope);
     }
 
     GetNextToken();  // eat (
@@ -53,7 +53,14 @@ std::unique_ptr<ExprAST> ParseIdentifierExpr() {
     }
     GetNextToken();  // eat )
 
-    return std::make_unique<CallExprAST>(id, std::move(args)); 
+    return std::make_unique<CallExprAST>(id, std::move(args));
+}
+
+/// global identifierexpr
+///   ::= global identifier = expression
+std::unique_ptr<ExprAST> ParseGlobalIdentifierExpr() {
+    GetNextToken(); // eat global
+    return ParseIdentifierExpr(true);
 }
 
 /// primary
@@ -68,6 +75,7 @@ std::unique_ptr<ExprAST> ParsePrimary() {
         case TOKEN_IF: return ParseIfExpr();
         case TOKEN_FOR: return ParseForExpr();
         case TOKEN_OPERATOR: return ParseUnary();
+        case TOKEN_GLOBAL: return ParseGlobalIdentifierExpr();
         default: return nullptr;
     }
 }

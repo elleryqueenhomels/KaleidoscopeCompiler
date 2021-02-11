@@ -46,14 +46,18 @@ class NumberExprAST : public ExprAST {
 // variable expression
 class VariableExprAST : public ExprAST {
   public:
-    VariableExprAST(const std::string& name) : name_(name) {}
+    VariableExprAST(const std::string& name, bool is_global_scope = false)
+        : name_(name), is_global_scope_(is_global_scope) {}
 
     const std::string& name() const { return name_; }
+
+    bool isGlobalScope() const { return is_global_scope_; }
 
     llvm::Value* CodeGen() override;
 
   private:
     std::string name_;
+    bool is_global_scope_;
 };
 
 // binary operation expression
@@ -192,7 +196,11 @@ std::unique_ptr<ExprAST> ParseParenExpr();
 // identifierexpr 
 //   ::= identifier 
 //   ::= identifier ( expression, expression, ..., expression ) 
-std::unique_ptr<ExprAST> ParseIdentifierExpr();
+std::unique_ptr<ExprAST> ParseIdentifierExpr(bool is_global_scope = false);
+
+/// global identifierexpr
+///   ::= global identifier = expression
+std::unique_ptr<ExprAST> ParseGlobalIdentifierExpr();
 
 // primary 
 //   ::= identifierexpr 

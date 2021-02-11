@@ -3,6 +3,7 @@
 
 
 #include <string>
+#include <unordered_map>
 
 
 /**
@@ -35,7 +36,23 @@ enum Token {
     TOKEN_IN = -11,
     TOKEN_BINARY = -12,
     TOKEN_UNARY = -13,
-    TOKEN_OPERATOR = -14
+    TOKEN_OPERATOR = -14,
+    TOKEN_GLOBAL = -15
+};
+
+// Token Mapping Table
+const std::unordered_map<std::string, Token> g_token_mapping = {
+    {    "def", TOKEN_DEF    },
+    { "extern", TOKEN_EXTERN },
+    {    "end", TOKEN_END    },
+    {     "if", TOKEN_IF     },
+    {   "then", TOKEN_THEN   },
+    {   "else", TOKEN_ELSE   },
+    {    "for", TOKEN_FOR    },
+    {     "in", TOKEN_IN     },
+    { "binary", TOKEN_BINARY },
+    {  "unary", TOKEN_UNARY  },
+    { "global", TOKEN_GLOBAL },
 };
 
 

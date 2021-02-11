@@ -36,8 +36,11 @@ extern llvm::IRBuilder<> g_ir_builder;
 // Used for managing functions and global variables. You can consider it as a compile unit (like single .cpp file)
 extern std::unique_ptr<llvm::Module> g_module;
 
-// Used for recording the parameters of function
-extern std::unordered_map<std::string, llvm::AllocaInst*> g_named_values;
+// Used for recording the local named variables
+extern std::unordered_map<std::string, llvm::AllocaInst*> g_local_named_vars;
+
+// Used for recording the global named variables
+extern std::unordered_map<std::string, llvm::AllocaInst*> g_global_named_vars;
 
 // Function Passes Manager for CodeGen Optimizer
 extern std::unique_ptr<llvm::legacy::FunctionPassManager> g_fpm;
@@ -54,6 +57,9 @@ llvm::Function* GetFunction(const std::string& name);
 
 // add memory allocate instruction in the entry-block of function
 llvm::AllocaInst* CreateEntryBlockAlloca(llvm::Function* func, const std::string& var_name);
+
+// find variable AllocaInst from local_variable_table and global_variable_table
+llvm::AllocaInst* FindVariableAllocaInst(const std::string& name);
 
 void ReCreateModule();
 

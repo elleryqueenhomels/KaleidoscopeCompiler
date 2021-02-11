@@ -40,36 +40,10 @@ int GetToken() {
             g_identifier_str += last_char;
         }
 
-        if (g_identifier_str == "def") {
-            return TOKEN_DEF;
+        if (g_token_mapping.find(g_identifier_str) != g_token_mapping.end()) {
+            return g_token_mapping.at(g_identifier_str);
         }
-        if (g_identifier_str == "extern") {
-            return TOKEN_EXTERN;
-        }
-        if (g_identifier_str == "end") {
-            return TOKEN_END;
-        }
-        if (g_identifier_str == "if") {
-            return TOKEN_IF;
-        }
-        if (g_identifier_str == "then") {
-            return TOKEN_THEN;
-        }
-        if (g_identifier_str == "else") {
-            return TOKEN_ELSE;
-        }
-        if (g_identifier_str == "for") { 
-            return TOKEN_FOR; 
-        }
-        if (g_identifier_str == "in") { 
-            return TOKEN_IN; 
-        }
-        if (g_identifier_str == "binary") {
-            return TOKEN_BINARY;
-        }
-        if (g_identifier_str == "unary") {
-            return TOKEN_UNARY;
-        }
+
         return TOKEN_IDENTIFIER;
     }
 

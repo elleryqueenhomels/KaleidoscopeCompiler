@@ -33,5 +33,10 @@ def sum(left, right)
     sum
 end
 
-sum(1, 6)   # return 21
+sum(1, 7)   # return 28
 sum(1, 100) # return 5050
+
+will = 10086
+will = 0
+will = if sum(1, 20) > 100 then 65536 else -65536 end
+will = 0

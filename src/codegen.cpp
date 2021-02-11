@@ -14,7 +14,10 @@ llvm::IRBuilder<> g_ir_builder(g_llvm_context);
 std::unique_ptr<llvm::Module> g_module;
 
 // Used for recording the parameters of function
-std::unordered_map<std::string, llvm::AllocaInst*> g_named_values;
+std::unordered_map<std::string, llvm::AllocaInst*> g_local_named_vars;
+
+// Used for recording the global named variables
+std::unordered_map<std::string, llvm::AllocaInst*> g_global_named_vars;
 
 // Function Passes Manager for CodeGen Optimizer
 std::unique_ptr<llvm::legacy::FunctionPassManager> g_fpm;
@@ -31,8 +34,8 @@ llvm::Value* NumberExprAST::CodeGen() {
 }
 
 llvm::Value* VariableExprAST::CodeGen() {
-    llvm::AllocaInst* val = g_named_values.at(name_);
-    return g_ir_builder.CreateLoad(val, name_.c_str());
+    llvm::AllocaInst* var = FindVariableAllocaInst(name_);
+    return g_ir_builder.CreateLoad(var, name_.c_str());
 }
 
 llvm::Value* UnaryExprAST::CodeGen() {
@@ -59,14 +62,21 @@ llvm::Value* UnaryExprAST::CodeGen() {
 llvm::Value* BinaryExprAST::CodeGen() {
     // handle assignment at first if this is an assignment statement
     if (op_ == "=") {
-        llvm::AllocaInst* var;
         VariableExprAST* leftVar = (VariableExprAST*) lhs_.get();
-        if (g_named_values.find(leftVar->name()) == g_named_values.end()) {
-            llvm::Function* func = g_ir_builder.GetInsertBlock()->getParent();
-            var = CreateEntryBlockAlloca(func, leftVar->name());
-            g_named_values[leftVar->name()] = var;
-        } else {
-            var = g_named_values[leftVar->name()];
+        llvm::AllocaInst* var = FindVariableAllocaInst(leftVar->name());
+        if (var == nullptr) {
+            if (leftVar->isGlobalScope()) {
+                g_module->getOrInsertGlobal(leftVar->name(), llvm::Type::getDoubleTy(g_llvm_context));
+                llvm::GlobalVariable* gbl_var = g_module->getNamedGlobal(leftVar->name());
+                gbl_var->setLinkage(llvm::GlobalValue::CommonLinkage);
+                gbl_var->setAlignment(llvm::MaybeAlign(8));
+                var = (llvm::AllocaInst*) gbl_var;
+                g_global_named_vars[leftVar->name()] = var;
+            } else {
+                llvm::Function* func = g_ir_builder.GetInsertBlock()->getParent();
+                var = CreateEntryBlockAlloca(func, leftVar->name());
+                g_local_named_vars[leftVar->name()] = var;
+            }
         }
 
         llvm::Value* rightVal = rhs_->CodeGen();
@@ -196,14 +206,14 @@ llvm::Value* FunctionAST::CodeGen() {
     g_ir_builder.SetInsertPoint(block);
 
     // register function arguments to `g_named_values`, so VariableExprAST can codegen
-    g_named_values.clear();
+    g_local_named_vars.clear();
     for (llvm::Value& arg : func->args()) {
         // create a variable on stack for each function argument & assign the initial value
         // set argument name and corresponding variable into g_named_values
         // so that in later code piece we can ref the on stack variable
         llvm::AllocaInst* var = CreateEntryBlockAlloca(func, (std::string) arg.getName());
         g_ir_builder.CreateStore(&arg, var);
-        g_named_values[(std::string) arg.getName()] = var;
+        g_local_named_vars[(std::string) arg.getName()] = var;
     }
 
     // codegen body then return
@@ -301,7 +311,7 @@ llvm::Value* ForExprAST::CodeGen() {
     // so we need to register it into g_named_values
     // NOTE: var_name may be duplicated with function argument names
     // currently we ignore this special case for convenience
-    g_named_values[var_name_] = var;
+    g_local_named_vars[var_name_] = var;
 
     // codegen start
     llvm::Value* start_val = start_expr_->CodeGen();
@@ -355,7 +365,7 @@ llvm::Value* ForExprAST::CodeGen() {
     g_ir_builder.SetInsertPoint(after_block);
 
     // erase var_name when loop ends
-    g_named_values.erase(var_name_);
+    g_local_named_vars.erase(var_name_);
 
     // return 0
     return llvm::Constant::getNullValue(llvm::Type::getDoubleTy(g_llvm_context));
@@ -377,6 +387,17 @@ llvm::Function* GetFunction(const std::string& name) {
 llvm::AllocaInst* CreateEntryBlockAlloca(llvm::Function* func, const std::string& var_name) {
     llvm::IRBuilder<> ir_builder(&(func->getEntryBlock()), func->getEntryBlock().begin());
     return ir_builder.CreateAlloca(llvm::Type::getDoubleTy(g_llvm_context), nullptr, var_name.c_str());
+}
+
+// find variable AllocaInst from local_variable_table and global_variable_table
+llvm::AllocaInst* FindVariableAllocaInst(const std::string& name) {
+    if (g_local_named_vars.find(name) != g_local_named_vars.end()) {
+        return g_local_named_vars[name];
+    }
+    if (g_global_named_vars.find(name) != g_global_named_vars.end()) {
+        return g_global_named_vars[name];
+    }
+    return nullptr;
 }
 
 void ReCreateModule() {
