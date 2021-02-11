@@ -205,11 +205,11 @@ llvm::Value* FunctionAST::CodeGen() {
     llvm::BasicBlock* block = llvm::BasicBlock::Create(g_llvm_context, "entry", func);
     g_ir_builder.SetInsertPoint(block);
 
-    // register function arguments to `g_named_values`, so VariableExprAST can codegen
+    // register function arguments to `g_local_named_vars`, so VariableExprAST can codegen
     g_local_named_vars.clear();
     for (llvm::Value& arg : func->args()) {
         // create a variable on stack for each function argument & assign the initial value
-        // set argument name and corresponding variable into g_named_values
+        // set argument name and corresponding variable into g_local_named_vars
         // so that in later code piece we can ref the on stack variable
         llvm::AllocaInst* var = CreateEntryBlockAlloca(func, (std::string) arg.getName());
         g_ir_builder.CreateStore(&arg, var);

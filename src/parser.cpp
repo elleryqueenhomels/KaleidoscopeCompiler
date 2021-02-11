@@ -11,10 +11,10 @@ int GetNextToken() {
 
 // define precedence for operator
 std::unordered_map<std::string, int> g_binop_precedence = {
-    { "&&", 5 }, { "||", 5 }, { "==", 10 }, { "!=", 10 },
+    { "&&", 6 }, { "||", 6 }, { "==", 10 }, { "!=", 10 },
     { "<", 10 }, { ">", 10 }, { "<=", 10 }, { ">=", 10 },
     { "+", 20 }, { "-", 20 }, {  "*", 40 }, {  "/", 40 },
-    { "=",  1 }
+    { "=",  3 }
 };
 
 // numberexpr ::= number
