@@ -157,9 +157,15 @@ std::unique_ptr<ExprAST> ParseIfExpr() {
     GetNextToken(); // eat if
     std::unique_ptr<ExprAST> cond = ParseExpression();
     GetNextToken(); // eat then
-    std::unique_ptr<ExprAST> then_expr = ParseExpression();
+    std::vector<std::unique_ptr<ExprAST>> then_expr;
+    while (g_current_token != TOKEN_ELSE) {
+        then_expr.push_back(std::move(ParseExpression()));
+    }
     GetNextToken(); // eat else
-    std::unique_ptr<ExprAST> else_expr = ParseExpression();
+    std::vector<std::unique_ptr<ExprAST>> else_expr;
+    while (g_current_token != TOKEN_END) {
+        else_expr.push_back(std::move(ParseExpression()));
+    }
     GetNextToken(); // eat end
     return std::make_unique<IfExprAST>(std::move(cond), std::move(then_expr), std::move(else_expr));
 }
@@ -177,7 +183,10 @@ std::unique_ptr<ExprAST> ParseForExpr() {
     GetNextToken(); // eat ,
     std::unique_ptr<ExprAST> step_expr = ParseExpression();
     GetNextToken(); // eat in
-    std::unique_ptr<ExprAST> body_expr = ParseExpression();
+    std::vector<std::unique_ptr<ExprAST>> body_expr;
+    while (g_current_token != TOKEN_END) {
+        body_expr.push_back(std::move(ParseExpression()));
+    }
     GetNextToken(); // eat end
     return std::make_unique<ForExprAST>(
         var_name, std::move(start_expr), std::move(end_expr), std::move(step_expr), std::move(body_expr));

@@ -103,15 +103,15 @@ class CallExprAST : public ExprAST {
 // if then else expression
 class IfExprAST : public ExprAST {
   public:
-    IfExprAST(std::unique_ptr<ExprAST> cond, std::unique_ptr<ExprAST> then_expr, std::unique_ptr<ExprAST> else_expr)
+    IfExprAST(std::unique_ptr<ExprAST> cond, std::vector<std::unique_ptr<ExprAST>> then_expr, std::vector<std::unique_ptr<ExprAST>> else_expr)
         : cond_(std::move(cond)), then_expr_(std::move(then_expr)), else_expr_(std::move(else_expr)) {}
 
     llvm::Value* CodeGen() override;
 
   private:
     std::unique_ptr<ExprAST> cond_;
-    std::unique_ptr<ExprAST> then_expr_;
-    std::unique_ptr<ExprAST> else_expr_;
+    std::vector<std::unique_ptr<ExprAST>> then_expr_;
+    std::vector<std::unique_ptr<ExprAST>> else_expr_;
 };
 
 // for in expression
@@ -122,7 +122,7 @@ class ForExprAST : public ExprAST {
       std::unique_ptr<ExprAST> start_expr,
       std::unique_ptr<ExprAST> end_expr,
       std::unique_ptr<ExprAST> step_expr,
-      std::unique_ptr<ExprAST> body_expr)
+      std::vector<std::unique_ptr<ExprAST>> body_expr)
         : var_name_(var_name),
           start_expr_(std::move(start_expr)),
           end_expr_(std::move(end_expr)),
@@ -136,7 +136,7 @@ class ForExprAST : public ExprAST {
     std::unique_ptr<ExprAST> start_expr_;
     std::unique_ptr<ExprAST> end_expr_;
     std::unique_ptr<ExprAST> step_expr_;
-    std::unique_ptr<ExprAST> body_expr_;
+    std::vector<std::unique_ptr<ExprAST>> body_expr_;
 };
 
 // function interface

@@ -261,7 +261,14 @@ llvm::Value* IfExprAST::CodeGen() {
     g_ir_builder.SetInsertPoint(then_block);
 
     // codegen then_block, add instruction to jump to final_block
-    llvm::Value* then_value = then_expr_->CodeGen();
+    llvm::Value* then_value = nullptr;
+    for (auto& expr : then_expr_) {
+        then_value = expr->CodeGen();
+    }
+    if (then_value == nullptr) {
+        then_value = llvm::Constant::getNullValue(llvm::Type::getDoubleTy(g_llvm_context));
+    }
+
     g_ir_builder.CreateBr(final_block);
 
     // inside then statement, there may be nested if-then-else,
@@ -277,7 +284,14 @@ llvm::Value* IfExprAST::CodeGen() {
     g_ir_builder.SetInsertPoint(else_block);
 
     // codegen else_block, similar to then_block
-    llvm::Value* else_value = else_expr_->CodeGen();
+    llvm::Value* else_value = nullptr;
+    for (auto& expr : else_expr_) {
+        else_value = expr->CodeGen();
+    }
+    if (else_value == nullptr) {
+        else_value = llvm::Constant::getNullValue(llvm::Type::getDoubleTy(g_llvm_context));
+    }
+
     g_ir_builder.CreateBr(final_block);
 
     // same reason as then_block (nested if-then-else)
@@ -339,7 +353,9 @@ llvm::Value* ForExprAST::CodeGen() {
     g_ir_builder.SetInsertPoint(loop_block);
 
     // add body instructions into loop_block
-    body_expr_->CodeGen();
+    for (auto& expr : body_expr_) {
+        expr->CodeGen();
+    }
 
     // codegen step_expr
     llvm::Value* step_value = step_expr_->CodeGen();
