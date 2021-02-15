@@ -33,9 +33,3 @@
 
 # Generated folders/files
 *.dSYM/
-*.test
-
-# External projects
-llvm-project/
-llvm/
-llvm-c/

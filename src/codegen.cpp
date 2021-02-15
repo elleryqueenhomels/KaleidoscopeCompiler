@@ -418,7 +418,7 @@ llvm::AllocaInst* FindVariableAllocaInst(const std::string& name) {
 
 void ReCreateModule() {
     // open a new module
-    g_module = std::make_unique<llvm::Module>("my cool jit", g_llvm_context);
+    g_module = std::make_unique<llvm::Module>("kaleidoscope jit", g_llvm_context);
     g_module->setDataLayout(g_jit->getTargetMachine().createDataLayout());
 
     // create a new pass manager attached to g_module
@@ -440,7 +440,7 @@ void ReCreateModule() {
 
 void ParseDefinitionToken() {
     auto ast = ParseDefinition();
-    std::cout << "parsed a function definition" << std::endl;
+    std::cout << "Parsed a function definition:" << std::endl;
     ast->CodeGen()->print(llvm::errs());
     std::cerr << std::endl;
 
@@ -450,7 +450,7 @@ void ParseDefinitionToken() {
 
 void ParseExternToken() {
     auto ast = ParseExtern();
-    std::cout << "parsed an extern" << std::endl;
+    std::cout << "Parsed an extern:" << std::endl;
     ast->CodeGen()->print(llvm::errs());
     std::cerr << std::endl;
 
@@ -459,7 +459,7 @@ void ParseExternToken() {
 
 void ParseTopLevel() {
     auto ast = ParseTopLevelExpr();
-    std::cout << "parsed a top level expr" << std::endl;
+    std::cout << "Parsed a top level expr:" << std::endl;
     ast->CodeGen()->print(llvm::errs());
     std::cout << std::endl;
 

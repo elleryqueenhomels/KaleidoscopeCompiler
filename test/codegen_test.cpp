@@ -8,6 +8,7 @@ int main() {
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmPrinter();
     llvm::InitializeNativeTargetAsmParser();
+
     g_jit.reset(new llvm::orc::KaleidoscopeJIT);
     ReCreateModule();
 
@@ -20,5 +21,6 @@ int main() {
             default: ParseTopLevel(); break;
         }
     }
+
     return 0;
 }
