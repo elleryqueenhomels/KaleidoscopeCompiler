@@ -33,21 +33,3 @@ end
 1 & 0
 0 & 1
 0 & 0
-
-# self-defined binary operator `=`, precedence is 9
-def binary= 9 (LHS RHS)
-  if LHS < RHS then
-    0
-  else
-    if LHS > RHS then
-      0
-    else
-      1
-    end
-  end
-end
-
-5.0 = 5.0
-5.0 = 5.00001
-2.3 = 2.3
-2.3 = 2.31
