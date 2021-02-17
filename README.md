@@ -60,3 +60,8 @@ end
 ->  y = $50 - x
 ->  $y
 ```
+
+## How to Use
+- Install Prerequisites
+- Build Kaleidoscope Compiler: `bash build-jit.sh`
+- Use the compiler built above to compile your Kaleidoscope script: `./ksc-jit.app < your-script.ks`
