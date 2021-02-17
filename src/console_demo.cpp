@@ -9,8 +9,8 @@ int main() {
     llvm::InitializeNativeTargetAsmPrinter();
     llvm::InitializeNativeTargetAsmParser();
 
-    // enable print LLVM IR
-    g_enable_ir_print = true;
+    // disable print LLVM IR
+    g_enable_ir_print = false;
 
     g_jit.reset(new llvm::orc::KaleidoscopeJIT);
     ReCreateModule();
@@ -19,6 +19,7 @@ int main() {
     while (true) {
         switch (g_current_token) {
             case TOKEN_EOF: return 0;
+            case TOKEN_END: GetNextToken(); break;
             case TOKEN_DEF: ParseDefinitionToken(); break;
             case TOKEN_EXTERN: ParseExternToken(); break;
             default: ParseTopLevel(); break;

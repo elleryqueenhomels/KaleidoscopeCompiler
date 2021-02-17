@@ -4,6 +4,9 @@
 #include <iostream>
 
 
+// Add a flag to control whether to print out LLVM IR
+bool g_enable_ir_print;
+
 // Record the core "global" data of LLVM's core infrastructure, e.g. types and constants uniquing table
 llvm::LLVMContext g_llvm_context;
 
@@ -440,9 +443,13 @@ void ReCreateModule() {
 
 void ParseDefinitionToken() {
     auto ast = ParseDefinition();
-    std::cout << "Parsed a function definition:" << std::endl;
-    ast->CodeGen()->print(llvm::errs());
-    std::cerr << std::endl;
+    if (g_enable_ir_print) {
+        std::cout << "Parsed a function definition:" << std::endl;
+        ast->CodeGen()->print(llvm::errs());
+        std::cerr << std::endl;
+    } else {
+        ast->CodeGen();
+    }
 
     g_jit->addModule(std::move(g_module));
     ReCreateModule();
@@ -450,18 +457,26 @@ void ParseDefinitionToken() {
 
 void ParseExternToken() {
     auto ast = ParseExtern();
-    std::cout << "Parsed an extern:" << std::endl;
-    ast->CodeGen()->print(llvm::errs());
-    std::cerr << std::endl;
+    if (g_enable_ir_print) {
+        std::cout << "Parsed an extern:" << std::endl;
+        ast->CodeGen()->print(llvm::errs());
+        std::cerr << std::endl;
+    } else {
+        ast->CodeGen();
+    }
 
     name2proto_ast[ast->name()] = std::move(ast);
 }
 
 void ParseTopLevel() {
     auto ast = ParseTopLevelExpr();
-    std::cout << "Parsed a top level expr:" << std::endl;
-    ast->CodeGen()->print(llvm::errs());
-    std::cout << std::endl;
+    if (g_enable_ir_print) {
+        std::cout << "Parsed a top level expr:" << std::endl;
+        ast->CodeGen()->print(llvm::errs());
+        std::cout << std::endl;
+    } else {
+        ast->CodeGen();
+    }
 
     auto moduleKey = g_jit->addModule(std::move(g_module));
 
@@ -475,8 +490,12 @@ void ParseTopLevel() {
     double (*fp)() = (double (*)()) (symbol.getAddress().get());
 
     // execute and output
-    std::cout << "Evaluated to:" << std::endl;
-    std::cout << fp() << std::endl << std::endl;
+    if (g_enable_ir_print) {
+        std::cout << "Evaluated to:" << std::endl;
+        std::cout << fp() << std::endl << std::endl;
+    } else {
+        std::cout << "result> " << fp() << std::endl;
+    }
 
     g_jit->removeModule(moduleKey);
 }

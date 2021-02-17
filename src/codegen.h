@@ -27,6 +27,9 @@
 /**
  * Global Variable Declare
  */
+// Add a flag to control whether to print out LLVM IR
+extern bool g_enable_ir_print;
+
 // Record the core "global" data of LLVM's core infrastructure, e.g. types and constants uniquing table
 extern llvm::LLVMContext g_llvm_context;
 
