@@ -41,7 +41,7 @@ will = 0
 will = if sum(1, 20) > 100 then 65536 else -65536 end
 will = 0
 
-def binary :: 1 (LHS RHS)
+def binary -> 1 (LHS RHS)
     RHS
 end
 
@@ -49,5 +49,6 @@ def unary $ (x)
     sum(1, x)
 end
 
-will = sum(1, 10) + fibonacci(6)
-:: temp = will - $100
+    x = sum(1, 10) + fibonacci(6)
+->  y = $100 - x
+->  $y
