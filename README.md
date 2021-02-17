@@ -65,3 +65,9 @@ end
 - Install Prerequisites
 - Build Kaleidoscope Compiler: `bash build-jit.sh`
 - Use the compiler built above to compile your Kaleidoscope script: `./ksc-jit.app < your-script.ks`
+
+## Run as a Script Interpreter in Console
+- Install Prerequisites
+- Build Kaleidoscope Compiler: `bash run-console.sh`
+- Run the App: `./ksc-console.app`
+- Directly type your code in the command line, and use keyword `end` to get the result
