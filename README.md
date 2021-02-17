@@ -46,7 +46,7 @@ def sum(left, right)
 end
 
 # support user-defined binary operator
-def binary -> 1 (LHS RHS)
+def binary -> 1 (LHS, RHS)
     RHS
 end
 
