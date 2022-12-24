@@ -237,7 +237,7 @@ std::unique_ptr<PrototypeAST> ParsePrototype() {
     }
     GetNextToken(); // eat )
 
-    return std::make_unique<PrototypeAST>(function_name, arg_names, is_operator, precedence);
+    return std::make_unique<PrototypeAST>(function_name, std::move(arg_names), is_operator, precedence);
 }
 
 // definition ::= def prototype expression
