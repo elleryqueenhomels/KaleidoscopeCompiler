@@ -3,7 +3,6 @@
 #include "lexer.h"
 #include <iostream>
 
-
 int main() {
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmPrinter();

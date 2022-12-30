@@ -3,7 +3,6 @@
 #include "lexer.h"
 #include <iostream>
 
-
 // Add a flag to control whether to print out LLVM IR
 bool g_enable_ir_print;
 
@@ -30,7 +29,6 @@ std::unique_ptr<llvm::orc::KaleidoscopeJIT> g_jit;
 
 // Add dictionary for function name to function interface
 std::unordered_map<std::string, std::unique_ptr<PrototypeAST>> name2proto_ast;
-
 
 llvm::Value* NumberExprAST::CodeGen() {
     return llvm::ConstantFP::get(g_llvm_context, llvm::APFloat(val_));

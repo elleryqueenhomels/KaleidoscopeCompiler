@@ -1,7 +1,6 @@
 #include "lexer.h"
 #include "parser.h"
 
-
 // current token need to be processed
 int g_current_token;
 

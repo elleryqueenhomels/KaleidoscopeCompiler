@@ -1,12 +1,10 @@
 #ifndef _H_PARSER
 #define _H_PARSER
 
-
 #include "codegen.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
-
 
 /**
  * Global Variable Declare
@@ -19,7 +17,6 @@ extern std::unordered_map<std::string, int> g_binop_precedence;
 
 // symbol for top level expression
 const std::string top_level_expr_name = "__anon_expr";
-
 
 /**
  * CLASS DECLARE
@@ -49,9 +46,9 @@ class VariableExprAST : public ExprAST {
     VariableExprAST(const std::string& name, bool is_global_scope = false)
         : name_(name), is_global_scope_(is_global_scope) {}
 
-    const std::string& name() const { return name_; }
+    const std::string& name() const noexcept { return name_; }
 
-    bool isGlobalScope() const { return is_global_scope_; }
+    bool isGlobalScope() const noexcept { return is_global_scope_; }
 
     llvm::Value* CodeGen() override;
 
@@ -103,8 +100,13 @@ class CallExprAST : public ExprAST {
 // if then else expression
 class IfExprAST : public ExprAST {
   public:
-    IfExprAST(std::unique_ptr<ExprAST> cond, std::vector<std::unique_ptr<ExprAST>> then_expr, std::vector<std::unique_ptr<ExprAST>> else_expr)
-        : cond_(std::move(cond)), then_expr_(std::move(then_expr)), else_expr_(std::move(else_expr)) {}
+    IfExprAST(
+      std::unique_ptr<ExprAST> cond,
+      std::vector<std::unique_ptr<ExprAST>> then_expr,
+      std::vector<std::unique_ptr<ExprAST>> else_expr)
+        : cond_(std::move(cond)),
+          then_expr_(std::move(then_expr)),
+          else_expr_(std::move(else_expr)) {}
 
     llvm::Value* CodeGen() override;
 
@@ -140,22 +142,22 @@ class ForExprAST : public ExprAST {
 };
 
 // function interface
-class PrototypeAST {
+class PrototypeAST : public ExprAST {
   public:
     PrototypeAST(const std::string& name, std::vector<std::string> args, bool is_operator = false, int op_precedence = 0)
         : name_(name), args_(std::move(args)), is_operator_(is_operator), op_precedence_(op_precedence) {}
 
-    const std::string& name() const { return name_; }
+    const std::string& name() const noexcept { return name_; }
 
-    int op_precedence() const { return op_precedence_; }
+    int op_precedence() const noexcept { return op_precedence_; }
 
-    bool IsUnaryOp() const { return is_operator_ && args_.size() == 1; }
+    bool IsUnaryOp() const noexcept { return is_operator_ && args_.size() == 1; }
 
-    bool IsBinaryOp() const { return is_operator_ && args_.size() == 2; }
+    bool IsBinaryOp() const noexcept { return is_operator_ && args_.size() == 2; }
 
     const std::string GetOpName() const { return IsBinaryOp() ? name_.substr(6) : name_.substr(5); }
 
-    llvm::Value* CodeGen();
+    llvm::Value* CodeGen() override;
 
   private:
     std::string name_;
@@ -165,12 +167,12 @@ class PrototypeAST {
 };
 
 // function implementation
-class FunctionAST {
+class FunctionAST : public ExprAST {
   public:
     FunctionAST(std::unique_ptr<PrototypeAST> proto, std::vector<std::unique_ptr<ExprAST>> body)
         : proto_(std::move(proto)), body_(std::move(body)) {}
 
-    llvm::Value* CodeGen();
+    llvm::Value* CodeGen() override;
 
   private:
     std::unique_ptr<PrototypeAST> proto_;
@@ -242,6 +244,5 @@ std::unique_ptr<PrototypeAST> ParseExtern();
 
 // toplevelexpr ::= expression 
 std::unique_ptr<FunctionAST> ParseTopLevelExpr();
-
 
 #endif // _H_PARSER

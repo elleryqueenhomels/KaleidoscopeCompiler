@@ -1,7 +1,6 @@
 #ifndef _H_CODE_GEN
 #define _H_CODE_GEN
 
-
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/IR/BasicBlock.h"
@@ -22,7 +21,6 @@
 #include "llvm/Transforms/Utils.h"
 #include "KaleidoscopeJIT.h"
 #include <unordered_map>
-
 
 /**
  * Global Variable Declare
@@ -71,6 +69,5 @@ void ParseDefinitionToken();
 void ParseExternToken();
 
 void ParseTopLevel();
-
 
 #endif // _H_CODE_GEN

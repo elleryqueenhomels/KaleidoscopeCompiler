@@ -2,7 +2,6 @@
 #include <string>
 #include <unordered_set>
 
-
 // Filled in if TOKEN_IDENTIFIER
 std::string g_identifier_str;
 

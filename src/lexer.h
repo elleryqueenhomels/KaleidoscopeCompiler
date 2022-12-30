@@ -1,10 +1,8 @@
 #ifndef _H_LEXER
 #define _H_LEXER
 
-
 #include <string>
 #include <unordered_map>
-
 
 /**
  * Global Variable Declare
@@ -17,7 +15,6 @@ extern double g_number_val;
 
 // Filled in if TOKEN_OPERATOR
 extern std::string g_operator_str;
-
 
 /**
  * Enum Declare
@@ -61,6 +58,5 @@ const std::unordered_map<std::string, Token> g_token_mapping = {
  */
 // extract a token from stdin
 int GetToken();
-
 
 #endif // _H_LEXER
