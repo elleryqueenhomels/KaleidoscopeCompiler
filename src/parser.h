@@ -155,7 +155,7 @@ class PrototypeAST : public ExprAST {
 
     bool IsBinaryOp() const noexcept { return is_operator_ && args_.size() == 2; }
 
-    const std::string GetOpName() const { return IsBinaryOp() ? name_.substr(6) : name_.substr(5); }
+    std::string GetOpName() const { return IsBinaryOp() ? name_.substr(6) : name_.substr(5); }
 
     llvm::Value* CodeGen() override;
 

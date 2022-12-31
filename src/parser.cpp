@@ -20,7 +20,7 @@ std::unordered_map<std::string, int> g_binop_precedence = {
 std::unique_ptr<ExprAST> ParseNumberExpr() {
     auto result = std::make_unique<NumberExprAST>(g_number_val);
     GetNextToken();
-    return std::move(result);
+    return result;
 }
 
 // parenexpr ::= ( expression )
@@ -158,12 +158,12 @@ std::unique_ptr<ExprAST> ParseIfExpr() {
     GetNextToken(); // eat then
     std::vector<std::unique_ptr<ExprAST>> then_expr;
     while (g_current_token != TOKEN_ELSE) {
-        then_expr.push_back(std::move(ParseExpression()));
+        then_expr.push_back(ParseExpression());
     }
     GetNextToken(); // eat else
     std::vector<std::unique_ptr<ExprAST>> else_expr;
     while (g_current_token != TOKEN_END) {
-        else_expr.push_back(std::move(ParseExpression()));
+        else_expr.push_back(ParseExpression());
     }
     GetNextToken(); // eat end
     return std::make_unique<IfExprAST>(std::move(cond), std::move(then_expr), std::move(else_expr));
@@ -184,7 +184,7 @@ std::unique_ptr<ExprAST> ParseForExpr() {
     GetNextToken(); // eat in
     std::vector<std::unique_ptr<ExprAST>> body_expr;
     while (g_current_token != TOKEN_END) {
-        body_expr.push_back(std::move(ParseExpression()));
+        body_expr.push_back(ParseExpression());
     }
     GetNextToken(); // eat end
     return std::make_unique<ForExprAST>(
